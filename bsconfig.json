@@ -13,6 +13,7 @@
   },
   "suffix": ".bs.js",
   "bs-dependencies": [
+    "bs-ws"
   ],
   "warnings": {
     "error" : "+101"

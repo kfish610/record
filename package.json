@@ -14,7 +14,9 @@
   "devDependencies": {
     "bs-platform": "^5.0.0"
   },
-  "dependencies": {},
+  "dependencies": {
+    "bs-ws": "^1.0.9"
+  },
   "repository": {
     "type": "git",
     "url": "github:kfish/record"
