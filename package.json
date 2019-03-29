@@ -15,6 +15,7 @@
     "bs-platform": "^5.0.0"
   },
   "dependencies": {
+    "@glennsl/bs-json": "^3.0.0",
     "bs-ws": "^1.0.9"
   },
   "repository": {

@@ -13,7 +13,8 @@
   },
   "suffix": ".bs.js",
   "bs-dependencies": [
-    "bs-ws"
+    "bs-ws",
+    "@glennsl/bs-json"
   ],
   "warnings": {
     "error" : "+101"
