@@ -1,5 +1,9 @@
 module Presence = Data_presence;
 
+module User = Data_user;
+
+module Guild = Data_guild;
+
 exception NotImplemented;
 
 type updateStatus = {
@@ -9,7 +13,17 @@ type updateStatus = {
   afk: bool,
 };
 
-type heartbeat = option(int);
+type ready = {
+  v: int,
+  user: User.user,
+  private_channels: array(unit),
+  guilds: array(Guild.unavailableGuild),
+  session_id: string,
+  trace: array(string),
+  shard: option(array(int)),
+};
+
+type heartbeat = Js.null(int);
 
 type identify = {
   token: string,
@@ -30,7 +44,11 @@ type hello = {
   trace: array(string),
 };
 
+type event =
+  | Ready(ready);
+
 type payload =
+  | Event(event)
   | Heartbeat(heartbeat)
   | Identify(identify)
   | Hello(hello)
@@ -45,13 +63,69 @@ type data = {
 
 let op_of_payload = payload =>
   switch (payload) {
+  | Event(_) => 0
   | Heartbeat(_) => 1
   | Identify(_) => 2
   | Hello(_) => 10
   | Ack => 11
   };
 
+let t_of_payload = payload =>
+  switch (payload) {
+  | Event(event) =>
+    Some(
+      switch (event) {
+      | Ready(_) => "READY"
+      },
+    )
+  | _ => None
+  };
+
 module Decode = {
+  module User = {
+    open User;
+
+    let user = json =>
+      Json.Decode.{
+        id: json |> field("id", string),
+        username: json |> field("username", string),
+        discriminator: json |> field("discriminator", string),
+        avatar: json |> field("avatar", nullable(string)),
+        bot: json |> field("bot", optional(bool)),
+        mfa_enabled: json |> optional(field("mfa_enabled", bool)),
+        locale: json |> optional(field("locale", string)),
+        verified: json |> optional(field("verified", bool)),
+        email: json |> optional(field("email", string)),
+        flags: json |> optional(field("flags", int)),
+        premium_type: json |> optional(field("premium_type", int)),
+      };
+  };
+
+  module Guild = {
+    open Guild;
+
+    let unavailableGuild = json =>
+      Json.Decode.{
+        id: json |> field("id", string),
+        unavailable: json |> field("unavailable", bool),
+      };
+  };
+
+  let ready = json =>
+    Event(
+      Ready(
+        Json.Decode.{
+          v: json |> field("v", int),
+          user: json |> field("user", User.user),
+          private_channels: json |> field("private_channels", array(_ => ())),
+          guilds: json |> field("guilds", array(Guild.unavailableGuild)),
+          session_id: json |> field("session_id", string),
+          trace: json |> field("_trace", array(string)),
+          shard: json |> optional(field("shard", array(int))),
+        },
+      ),
+    );
+
   let hello = json =>
     Hello(
       Json.Decode.{
@@ -68,6 +142,11 @@ module Decode = {
         |> field(
              "d",
              switch (json |> field("op", int)) {
+             | 0 =>
+               switch (json |> field("t", string)) {
+               | "READY" => ready
+               | _ => raise(NotImplemented)
+               }
              | 10 => hello
              | 11 => (_ => Ack)
              | _ => raise(NotImplemented)
@@ -81,11 +160,18 @@ module Decode = {
 
 module Encode = {
   let required = (encoder, r) => Some(encoder(r));
+
   let optional = (encoder, r) =>
     switch (r) {
     | Some(x) => Some(encoder(x))
     | None => None
     };
+  
+  let null = (encoder, r) =>
+    switch (r) {
+    | x when x == Js.null => Json.Encode.null
+    | x => encoder(Js.Null.getExn(x))
+    }
 
   let object__ = fields =>
     List.fold_right(
@@ -101,6 +187,7 @@ module Encode = {
 
   module Presence = {
     open Presence;
+
     let activityTimestamps = r =>
       Json.Encode.(
         object__([
@@ -108,6 +195,7 @@ module Encode = {
           ("end", r.end_ |> optional(int)),
         ])
       );
+
     let activityParty = r =>
       Json.Encode.(
         object__([
@@ -115,6 +203,7 @@ module Encode = {
           ("size", r.size |> optional(array(int))),
         ])
       );
+
     let activityAssets = r =>
       Json.Encode.(
         object__([
@@ -124,6 +213,7 @@ module Encode = {
           ("small_text", r.small_text |> optional(string)),
         ])
       );
+
     let activitySecrets = r =>
       Json.Encode.(
         object__([
@@ -132,6 +222,7 @@ module Encode = {
           ("match", r.match |> optional(string)),
         ])
       );
+
     let activity = r =>
       Json.Encode.(
         object__([
@@ -161,7 +252,7 @@ module Encode = {
       ])
     );
 
-  let heartbeat = Json.Encode.nullable(Json.Encode.int);
+  let heartbeat = null(Json.Encode.int);
 
   let props = r =>
     Json.Encode.(
@@ -191,37 +282,37 @@ module Encode = {
         ("_trace", r.trace |> array(string)),
       ])
     );
+
   let data = r =>
     Json.Encode.(
       object__([
         ("op", r.op |> required(int)),
         (
           "d",
-          
-            switch (r.d) {
-            | Heartbeat(payload) => payload |> required(heartbeat)
-            | Identify(payload) => payload |> required(identify)
-            | Hello(payload) => payload |> required(hello)
-            | Ack => Some(null)
-            }
+          switch (r.d) {
+          | Heartbeat(payload) => payload |> required(heartbeat)
+          | Identify(payload) => payload |> required(identify)
+          | _ => None
+          },
         ),
         ("s", r.s |> optional(int)),
         ("t", r.t |> optional(string)),
       ])
     );
+
   let dataFromPayload = r =>
     Json.Encode.(
-      object_([
-        ("op", op_of_payload(r) |> int),
+      object__([
+        ("op", op_of_payload(r) |> required(int)),
         (
           "d",
           switch (r) {
-          | Heartbeat(payload) => payload |> heartbeat
-          | Identify(payload) => payload |> identify
-          | Hello(payload) => payload |> hello
-          | Ack => null
+          | Heartbeat(payload) => payload |> required(heartbeat)
+          | Identify(payload) => payload |> required(identify)
+          | _ => None
           },
         ),
+        ("t", t_of_payload(r) |> optional(string)),
       ])
     );
 };

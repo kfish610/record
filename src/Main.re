@@ -1,6 +1,6 @@
 open Bot;
 Js.Promise.(
-  bot({token: ""})
+  bot({token: "<your token here>"})
   |> then_(bot => {
        Js.log(bot);
        resolve(bot);

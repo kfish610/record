@@ -47,7 +47,7 @@ let bot = settings =>
                   () =>
                     ws
                     ->send(
-                        Data.Encode.dataFromPayload(Heartbeat(None))
+                        Data.Encode.dataFromPayload(Heartbeat(Js.null))
                         |> Json.stringify,
                       )
                     ->ignore,
