@@ -6,3 +6,5 @@ Js.Promise.(
        resolve(bot);
      })
 );
+
+let rec hang = () => Js.Global.setTimeout(hang, 50000) |> ignore;

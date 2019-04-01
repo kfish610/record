@@ -1,3 +1,4 @@
+[%%debugger.chrome];
 type botSettings = {token: string};
 type t = {
   settings: botSettings,
@@ -21,7 +22,7 @@ let bot = settings =>
       ->on(
           `close(
             (code, reason) => {
-              Js.log("Closed " ++ string_of_int(code) ++ ": " ++ reason);
+              Js.log("Closed: " ++ string_of_int(code) ++ " " ++ reason);
               reject(. SocketClosed(code, reason));
             },
           ),
@@ -34,7 +35,48 @@ let bot = settings =>
             },
           ),
         )
-      ->on(`message(message => Js.log(message)))
+      ->on(
+          `message(
+            message => {
+              Js.log(message);
+              let data = message |> Json.parseOrRaise |> Data.Decode.data;
+              Js.log(data);
+              switch (data.d) {
+              | Hello(hello) =>
+                Js.Global.setInterval(
+                  () =>
+                    ws
+                    ->send(
+                        Data.Encode.dataFromPayload(Heartbeat(None))
+                        |> Json.stringify,
+                      )
+                    ->ignore,
+                  hello.heartbeat_interval,
+                )
+                |> ignore;
+                ws->send(
+                  Data.Encode.dataFromPayload(
+                    Identify({
+                      token: settings.token,
+                      properties: {
+                        os: Node.Process.process##platform,
+                        browser: "record",
+                        device: "record",
+                      },
+                      compress: None,
+                      large_threshold: None,
+                      shard: None,
+                      presence: None,
+                    }),
+                  )
+                  |> Json.stringify,
+                );
+              | Ack => ()
+              | _ => ()
+              };
+            },
+          ),
+        )
       ->ignore
     );
   });
