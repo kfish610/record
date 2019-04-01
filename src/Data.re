@@ -1,38 +1,6 @@
-module Presence = {
-  type activityTimestamps = {
-    start: option(int),
-    end_: option(int),
-  };
-  type activityParty = {
-    id: option(string),
-    size: option(array(int)),
-  };
-  type activityAssets = {
-    large_image: option(string),
-    large_text: option(string),
-    small_image: option(string),
-    small_text: option(string),
-  };
-  type activitySecrets = {
-    join: option(string),
-    spectate: option(string),
-    match: option(string),
-  };
-  type activity = {
-    name: string,
-    type_: int,
-    url: option(string),
-    timestamps: option(activityTimestamps),
-    application_id: option(string),
-    details: option(string),
-    state: option(string),
-    party: option(activityParty),
-    assets: option(activityAssets),
-    secrets: option(activitySecrets),
-    instance: option(bool),
-    flags: option(int),
-  };
-};
+module Presence = Data_presence;
+
+exception NotImplemented;
 
 type updateStatus = {
   since: option(int),
@@ -83,8 +51,6 @@ let op_of_payload = payload =>
   | Ack => 11
   };
 
-exception NotImplemented;
-
 module Decode = {
   let hello = json =>
     Hello(
@@ -114,6 +80,7 @@ module Decode = {
 };
 
 module Encode = {
+  let required = (encoder, r) => Some(encoder(r));
   let optional = (encoder, r) =>
     switch (r) {
     | Some(x) => Some(encoder(x))
@@ -136,50 +103,50 @@ module Encode = {
     open Presence;
     let activityTimestamps = r =>
       Json.Encode.(
-        object_([
-          ("start", r.start |> nullable(int)),
-          ("end", r.end_ |> nullable(int)),
+        object__([
+          ("start", r.start |> optional(int)),
+          ("end", r.end_ |> optional(int)),
         ])
       );
     let activityParty = r =>
       Json.Encode.(
-        object_([
-          ("id", r.id |> nullable(string)),
-          ("size", r.size |> nullable(array(int))),
+        object__([
+          ("id", r.id |> optional(string)),
+          ("size", r.size |> optional(array(int))),
         ])
       );
     let activityAssets = r =>
       Json.Encode.(
-        object_([
-          ("large_image", r.large_image |> nullable(string)),
-          ("large_text", r.large_text |> nullable(string)),
-          ("small_image", r.small_image |> nullable(string)),
-          ("small_text", r.small_text |> nullable(string)),
+        object__([
+          ("large_image", r.large_image |> optional(string)),
+          ("large_text", r.large_text |> optional(string)),
+          ("small_image", r.small_image |> optional(string)),
+          ("small_text", r.small_text |> optional(string)),
         ])
       );
     let activitySecrets = r =>
       Json.Encode.(
-        object_([
-          ("join", r.join |> nullable(string)),
-          ("spectate", r.spectate |> nullable(string)),
-          ("match", r.match |> nullable(string)),
+        object__([
+          ("join", r.join |> optional(string)),
+          ("spectate", r.spectate |> optional(string)),
+          ("match", r.match |> optional(string)),
         ])
       );
     let activity = r =>
       Json.Encode.(
-        object_([
-          ("name", r.name |> string),
-          ("type", r.type_ |> int),
-          ("url", r.url |> nullable(string)),
-          ("timestamps", r.timestamps |> nullable(activityTimestamps)),
-          ("application_id", r.application_id |> nullable(string)),
-          ("details", r.details |> nullable(string)),
-          ("state", r.state |> nullable(string)),
-          ("party", r.party |> nullable(activityParty)),
-          ("assets", r.assets |> nullable(activityAssets)),
-          ("secrets", r.secrets |> nullable(activitySecrets)),
-          ("instance", r.instance |> nullable(bool)),
-          ("flags", r.flags |> nullable(int)),
+        object__([
+          ("name", r.name |> required(string)),
+          ("type", r.type_ |> required(int)),
+          ("url", r.url |> optional(string)),
+          ("timestamps", r.timestamps |> optional(activityTimestamps)),
+          ("application_id", r.application_id |> optional(string)),
+          ("details", r.details |> optional(string)),
+          ("state", r.state |> optional(string)),
+          ("party", r.party |> optional(activityParty)),
+          ("assets", r.assets |> optional(activityAssets)),
+          ("secrets", r.secrets |> optional(activitySecrets)),
+          ("instance", r.instance |> optional(bool)),
+          ("flags", r.flags |> optional(int)),
         ])
       );
   };
@@ -189,8 +156,8 @@ module Encode = {
       object__([
         ("since", r.since |> optional(int)),
         ("game", r.game |> optional(Presence.activity)),
-        ("status", Some(r.status |> string)),
-        ("afk", Some(r.afk |> bool)),
+        ("status", r.status |> required(string)),
+        ("afk", r.afk |> required(bool)),
       ])
     );
 
@@ -208,8 +175,8 @@ module Encode = {
   let identify = r =>
     Json.Encode.(
       object__([
-        ("token", Some(r.token |> string)),
-        ("properties", Some(r.properties |> props)),
+        ("token", r.token |> required(string)),
+        ("properties", r.properties |> required(props)),
         ("compress", r.compress |> optional(bool)),
         ("large_threshold", r.large_threshold |> optional(int)),
         ("shard", r.shard |> optional(array(int))),
@@ -226,19 +193,20 @@ module Encode = {
     );
   let data = r =>
     Json.Encode.(
-      object_([
-        ("op", r.op |> int),
+      object__([
+        ("op", r.op |> required(int)),
         (
           "d",
-          switch (r.d) {
-          | Heartbeat(payload) => payload |> heartbeat
-          | Identify(payload) => payload |> identify
-          | Hello(payload) => payload |> hello
-          | Ack => null
-          },
+          
+            switch (r.d) {
+            | Heartbeat(payload) => payload |> required(heartbeat)
+            | Identify(payload) => payload |> required(identify)
+            | Hello(payload) => payload |> required(hello)
+            | Ack => Some(null)
+            }
         ),
-        ("s", r.s |> nullable(int)),
-        ("t", r.t |> nullable(string)),
+        ("s", r.s |> optional(int)),
+        ("t", r.t |> optional(string)),
       ])
     );
   let dataFromPayload = r =>
@@ -254,8 +222,6 @@ module Encode = {
           | Ack => null
           },
         ),
-        ("s", null),
-        ("t", null),
       ])
     );
 };
