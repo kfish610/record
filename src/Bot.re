@@ -56,7 +56,7 @@ let bot = settings =>
                           |> Json.stringify,
                         )
                       ->ignore,
-                    hello.heartbeat_interval,
+                    hello.heartbeatInterval,
                   )
                   |> ignore;
                   ws->send(
@@ -69,7 +69,7 @@ let bot = settings =>
                           device: "record",
                         },
                         compress: Missing,
-                        large_threshold: Missing,
+                        largeThreshold: Missing,
                         shard: Missing,
                         presence: Missing,
                       }),

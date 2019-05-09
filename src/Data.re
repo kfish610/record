@@ -24,12 +24,12 @@ module User = {
     discriminator: string,
     avatar: option(string),
     bot: optional(bool),
-    mfa_enabled: optional(bool),
+    mfaEnabled: optional(bool),
     locale: optional(string),
     verified: optional(bool),
     email: optional(string),
     flags: optional(int),
-    premium_type: optional(int),
+    premiumType: optional(int),
   };
 };
 
@@ -45,10 +45,10 @@ module Presence = {
   };
 
   type assets = {
-    large_image: optional(string),
-    large_text: optional(string),
-    small_image: optional(string),
-    small_text: optional(string),
+    largeImage: optional(string),
+    largeText: optional(string),
+    smallImage: optional(string),
+    smallText: optional(string),
   };
 
   type secrets = {
@@ -62,7 +62,7 @@ module Presence = {
     type_: int,
     url: optional(option(string)),
     timestamps: optional(timestamps),
-    application_id: optional(snowflake),
+    applicationId: optional(snowflake),
     details: optional(option(string)),
     state: optional(option(string)),
     party: optional(party),
@@ -76,10 +76,10 @@ module Presence = {
     user: User.t,
     roles: array(snowflake),
     game: option(activity),
-    guild_id: snowflake,
+    guildId: snowflake,
     status: string,
     activities: array(activity),
-    client_status: clientStatus,
+    clientStatus,
   }
   and clientStatus = {
     desktop: optional(string),
@@ -99,22 +99,22 @@ module Channel = {
   type t = {
     id: snowflake,
     type_: int,
-    guild_id: optional(snowflake),
+    guildId: optional(snowflake),
     position: optional(int),
-    permission_overwrites: optional(array(overwrite)),
+    permissionOverwrites: optional(array(overwrite)),
     name: optional(string),
     topic: optional(option(string)),
     nsfw: optional(bool),
-    last_message_id: optional(option(snowflake)),
+    lastMessageId: optional(option(snowflake)),
     bitrate: optional(int),
-    user_limit: optional(int),
-    rate_limit_per_user: optional(int),
+    userLimit: optional(int),
+    rateLimitPerUser: optional(int),
     recipients: optional(array(User.t)),
     icon: optional(option(string)),
-    owner_id: optional(snowflake),
-    application_id: optional(snowflake),
-    parent_id: optional(option(snowflake)),
-    last_pin_timestamp: optional(Js.Date.t),
+    ownerId: optional(snowflake),
+    applicationId: optional(snowflake),
+    parentId: optional(option(snowflake)),
+    lastPinTimestamp: optional(Js.Date.t),
   };
 };
 
@@ -124,7 +124,7 @@ module Emoji = {
     name: string,
     roles: optional(array(string)),
     user: optional(User.t),
-    require_colons: optional(bool),
+    requireColons: optional(bool),
     managed: optional(bool),
     animated: optional(bool),
   };
@@ -132,16 +132,16 @@ module Emoji = {
 
 module rec Voice: {
   type state = {
-    guild_id: snowflake,
-    channel_id: option(snowflake),
-    user_id: snowflake,
+    guildId: snowflake,
+    channelId: option(snowflake),
+    userId: snowflake,
     member: optional(Guild.member),
   };
 } = {
   type state = {
-    guild_id: snowflake,
-    channel_id: option(snowflake),
-    user_id: snowflake,
+    guildId: snowflake,
+    channelId: option(snowflake),
+    userId: snowflake,
     member: optional(Guild.member),
   };
 }
@@ -150,7 +150,7 @@ and Guild: {
     user: User.t,
     nick: optional(string),
     roles: array(string),
-    joined_at: Js.Date.t,
+    joinedAt: Js.Date.t,
     deaf: bool,
     mute: bool,
   };
@@ -166,35 +166,35 @@ and Guild: {
     icon: option(string),
     splash: option(string),
     owner: optional(bool),
-    owner_id: snowflake,
+    ownerId: snowflake,
     permissions: optional(int),
     region: string,
-    afk_channel_id: option(snowflake),
-    afk_timeout: int,
-    embed_enabled: optional(bool),
-    embed_channel_id: optional(snowflake),
-    verification_level: int,
-    default_message_notifications: int,
-    explicit_content_filter: int,
+    afkChannelId: option(snowflake),
+    afkTimeout: int,
+    embedEnabled: optional(bool),
+    embedChannelId: optional(snowflake),
+    verificationLevel: int,
+    defaultMessageNotifications: int,
+    explicitContentFilter: int,
     roles: array(Permissions.role),
     emojis: array(Emoji.t),
     features: array(string),
-    mfa_level: int,
-    application_id: option(snowflake),
-    widget_enabled: optional(bool),
-    widget_channel_id: optional(snowflake),
-    system_channel_id: option(snowflake),
-    joined_at: optional(Js.Date.t),
+    mfaLevel: int,
+    applicationId: option(snowflake),
+    widgetEnabled: optional(bool),
+    widgetChannelId: optional(snowflake),
+    systemChannelId: option(snowflake),
+    joinedAt: optional(Js.Date.t),
     large: optional(bool),
     unavailable: optional(bool),
-    member_count: optional(int),
-    voice_states: optional(array(Voice.state)),
+    memberCount: optional(int),
+    voiceStates: optional(array(Voice.state)),
     members: optional(array(member)),
     channels: optional(array(Channel.t)),
     presences: optional(array(Presence.update)),
-    max_presences: optional(option(int)),
-    max_members: optional(int),
-    vanity_url_code: option(string),
+    maxPresences: optional(option(int)),
+    maxMembers: optional(int),
+    vanityUrlCode: option(string),
     description: option(string),
     banner: option(string),
   };
@@ -205,7 +205,7 @@ and Guild: {
     user: User.t,
     nick: optional(string),
     roles: array(string),
-    joined_at: Js.Date.t,
+    joinedAt: Js.Date.t,
     deaf: bool,
     mute: bool,
   };
@@ -221,35 +221,35 @@ and Guild: {
     icon: option(string),
     splash: option(string),
     owner: optional(bool),
-    owner_id: snowflake,
+    ownerId: snowflake,
     permissions: optional(int),
     region: string,
-    afk_channel_id: option(snowflake),
-    afk_timeout: int,
-    embed_enabled: optional(bool),
-    embed_channel_id: optional(snowflake),
-    verification_level: int,
-    default_message_notifications: int,
-    explicit_content_filter: int,
+    afkChannelId: option(snowflake),
+    afkTimeout: int,
+    embedEnabled: optional(bool),
+    embedChannelId: optional(snowflake),
+    verificationLevel: int,
+    defaultMessageNotifications: int,
+    explicitContentFilter: int,
     roles: array(Permissions.role),
     emojis: array(Emoji.t),
     features: array(string),
-    mfa_level: int,
-    application_id: option(snowflake),
-    widget_enabled: optional(bool),
-    widget_channel_id: optional(snowflake),
-    system_channel_id: option(snowflake),
-    joined_at: optional(Js.Date.t),
+    mfaLevel: int,
+    applicationId: option(snowflake),
+    widgetEnabled: optional(bool),
+    widgetChannelId: optional(snowflake),
+    systemChannelId: option(snowflake),
+    joinedAt: optional(Js.Date.t),
     large: optional(bool),
     unavailable: optional(bool),
-    member_count: optional(int),
-    voice_states: optional(array(Voice.state)),
+    memberCount: optional(int),
+    voiceStates: optional(array(Voice.state)),
     members: optional(array(member)),
     channels: optional(array(Channel.t)),
     presences: optional(array(Presence.update)),
-    max_presences: optional(option(int)),
-    max_members: optional(int),
-    vanity_url_code: option(string),
+    maxPresences: optional(option(int)),
+    maxMembers: optional(int),
+    vanityUrlCode: option(string),
     description: option(string),
     banner: option(string),
   };
@@ -259,22 +259,19 @@ and Guild: {
 
 exception NotImplemented;
 
-type updateStatus = {
-  since: option(int),
-  game: option(Presence.activity),
-  status: string,
-  afk: bool,
-};
-
 type ready = {
   v: int,
   user: User.t,
-  private_channels: array(unit),
+  privateChannels: array(unit),
   guilds: array(Guild.unavailable),
-  session_id: string,
+  sessionId: string,
   trace: array(string),
   shard: optional(array(int)),
 };
+
+type dispatch =
+  | Ready(ready)
+  | GuildCreate(Guild.t);
 
 type heartbeat = option(int);
 
@@ -282,29 +279,65 @@ type identify = {
   token: string,
   properties: props,
   compress: optional(bool),
-  large_threshold: optional(int),
+  largeThreshold: optional(int),
   shard: optional(array(int)),
-  presence: optional(updateStatus),
+  presence: optional(statusUpdate),
 }
 and props = {
   os: string,
   browser: string,
   device: string,
+}
+and statusUpdate = {
+  since: option(int),
+  game: option(Presence.activity),
+  status: string,
+  afk: bool,
 };
 
+type voiceStateUpdate = {
+  guildId: snowflake,
+  channelId: option(snowflake),
+  selfMute: bool,
+  selfDeaf: bool,
+};
+
+type resume = {
+  token: string,
+  sessionId: string,
+  seq: int,
+};
+
+type requestGuildMembers = {
+  guildId: snowflake,
+  query: string,
+  limit: int,
+};
+
+type requestGuildMembersArr = {
+  guildId: array(snowflake),
+  query: string,
+  limit: int,
+};
+
+type invalidSession = bool;
+
 type hello = {
-  heartbeat_interval: int,
+  heartbeatInterval: int,
   trace: array(string),
 };
 
-type event =
-  | Ready(ready)
-  | GuildCreate(Guild.t);
-
 type payload =
-  | Event(event)
+  | Dispatch(dispatch)
   | Heartbeat(heartbeat)
   | Identify(identify)
+  | StatusUpdate(statusUpdate)
+  | VoiceStateUpdate(voiceStateUpdate)
+  | Resume(resume)
+  | Reconnect
+  | RequestGuildMembers(requestGuildMembers)
+  | RequestGuildMembersArr(requestGuildMembersArr)
+  | InvalidSession(invalidSession)
   | Hello(hello)
   | Ack;
 
@@ -317,18 +350,25 @@ type data = {
 
 let op_of_payload = payload =>
   switch (payload) {
-  | Event(_) => 0
+  | Dispatch(_) => 0
   | Heartbeat(_) => 1
   | Identify(_) => 2
+  | StatusUpdate(_) => 3
+  | VoiceStateUpdate(_) => 4
+  | Resume(_) => 6
+  | Reconnect => 7
+  | RequestGuildMembers(_) => 8
+  | RequestGuildMembersArr(_) => 8
+  | InvalidSession(_) => 9
   | Hello(_) => 10
   | Ack => 11
   };
 
 let t_of_payload = payload =>
   switch (payload) {
-  | Event(event) =>
+  | Dispatch(dispatch) =>
     Field(
-      switch (event) {
+      switch (dispatch) {
       | Ready(_) => "READY"
       | GuildCreate(_) => "GUILD_CREATE"
       },
@@ -337,7 +377,7 @@ let t_of_payload = payload =>
   };
 
 module Decode = {
-  let optional_ = (decoder, json) =>
+  let optionalField = (decoder, json) =>
     switch (json |> Json.Decode.optional(decoder)) {
     | Some(x) => Field(x)
     | None => Missing
@@ -368,13 +408,13 @@ module Decode = {
         username: json |> field("username", string),
         discriminator: json |> field("discriminator", string),
         avatar: json |> field("avatar", optional(string)),
-        bot: json |> field("bot", optional_(bool)),
-        mfa_enabled: json |> optional_(field("mfa_enabled", bool)),
-        locale: json |> optional_(field("locale", string)),
-        verified: json |> optional_(field("verified", bool)),
-        email: json |> optional_(field("email", string)),
-        flags: json |> optional_(field("flags", int)),
-        premium_type: json |> optional_(field("premium_type", int)),
+        bot: json |> field("bot", optionalField(bool)),
+        mfaEnabled: json |> optionalField(field("mfa_enabled", bool)),
+        locale: json |> optionalField(field("locale", string)),
+        verified: json |> optionalField(field("verified", bool)),
+        email: json |> optionalField(field("email", string)),
+        flags: json |> optionalField(field("flags", int)),
+        premiumType: json |> optionalField(field("premium_type", int)),
       };
   };
 
@@ -383,52 +423,53 @@ module Decode = {
 
     let timestamps = json =>
       Json.Decode.{
-        start: json |> optional_(field("start", int)),
-        end_: json |> optional_(field("end", int)),
+        start: json |> optionalField(field("start", int)),
+        end_: json |> optionalField(field("end", int)),
       };
 
     let party = json =>
       Json.Decode.{
-        id: json |> optional_(field("id", string)),
-        size: json |> optional_(field("size", array(int))),
+        id: json |> optionalField(field("id", string)),
+        size: json |> optionalField(field("size", array(int))),
       };
 
     let assets = json =>
       Json.Decode.{
-        large_image: json |> optional_(field("large_image", string)),
-        large_text: json |> optional_(field("large_text", string)),
-        small_image: json |> optional_(field("small_image", string)),
-        small_text: json |> optional_(field("small_text", string)),
+        largeImage: json |> optionalField(field("large_image", string)),
+        largeText: json |> optionalField(field("large_text", string)),
+        smallImage: json |> optionalField(field("small_image", string)),
+        smallText: json |> optionalField(field("small_text", string)),
       };
 
     let secrets = json =>
       Json.Decode.{
-        join: json |> optional_(field("join", string)),
-        spectate: json |> optional_(field("spectate", string)),
-        match: json |> optional_(field("match", string)),
+        join: json |> optionalField(field("join", string)),
+        spectate: json |> optionalField(field("spectate", string)),
+        match: json |> optionalField(field("match", string)),
       };
 
     let activity = json =>
       Json.Decode.{
         name: json |> field("name", string),
         type_: json |> field("type", int),
-        url: json |> optional_(field("url", optional(string))),
-        timestamps: json |> optional_(field("timestamps", timestamps)),
-        application_id: json |> optional_(field("application_id", string)),
-        details: json |> optional_(field("details", optional(string))),
-        state: json |> optional_(field("state", optional(string))),
-        party: json |> optional_(field("party", party)),
-        assets: json |> optional_(field("assets", assets)),
-        secrets: json |> optional_(field("secrets", secrets)),
-        instance: json |> optional_(field("instance", bool)),
-        flags: json |> optional_(field("flags", int)),
+        url: json |> optionalField(field("url", optional(string))),
+        timestamps: json |> optionalField(field("timestamps", timestamps)),
+        applicationId:
+          json |> optionalField(field("application_id", string)),
+        details: json |> optionalField(field("details", optional(string))),
+        state: json |> optionalField(field("state", optional(string))),
+        party: json |> optionalField(field("party", party)),
+        assets: json |> optionalField(field("assets", assets)),
+        secrets: json |> optionalField(field("secrets", secrets)),
+        instance: json |> optionalField(field("instance", bool)),
+        flags: json |> optionalField(field("flags", int)),
       };
 
     let clientStatus = json =>
       Json.Decode.{
-        desktop: json |> optional_(field("desktop", string)),
-        mobile: json |> optional_(field("mobile", string)),
-        web: json |> optional_(field("web", string)),
+        desktop: json |> optionalField(field("desktop", string)),
+        mobile: json |> optionalField(field("mobile", string)),
+        web: json |> optionalField(field("web", string)),
       };
 
     let update = json =>
@@ -436,10 +477,10 @@ module Decode = {
         user: json |> field("user", User.t),
         roles: json |> field("roles", array(string)),
         game: json |> field("game", optional(activity)),
-        guild_id: json |> field("guild_id", string),
+        guildId: json |> field("guild_id", string),
         status: json |> field("status", string),
         activities: json |> field("activities", array(activity)),
-        client_status: json |> field("client_status", clientStatus),
+        clientStatus: json |> field("client_status", clientStatus),
       };
   };
 
@@ -458,27 +499,30 @@ module Decode = {
       Json.Decode.{
         id: json |> field("id", string),
         type_: json |> field("type", int),
-        guild_id: json |> optional_(field("guild_id", string)),
-        position: json |> optional_(field("position", int)),
-        permission_overwrites:
+        guildId: json |> optionalField(field("guild_id", string)),
+        position: json |> optionalField(field("position", int)),
+        permissionOverwrites:
           json
-          |> optional_(field("permission_overwrites", array(overwrite))),
-        name: json |> optional_(field("name", string)),
-        topic: json |> optional_(field("topic", optional(string))),
-        nsfw: json |> optional_(field("nsfw", bool)),
-        last_message_id:
-          json |> optional_(field("last_message_id", optional(string))),
-        bitrate: json |> optional_(field("bitrate", int)),
-        user_limit: json |> optional_(field("user_limit", int)),
-        rate_limit_per_user:
-          json |> optional_(field("rate_limit_per_user", int)),
-        recipients: json |> optional_(field("recipients", array(User.t))),
-        icon: json |> optional_(field("icon", optional(string))),
-        owner_id: json |> optional_(field("owner_id", string)),
-        application_id: json |> optional_(field("application_id", string)),
-        parent_id: json |> optional_(field("parent_id", optional(string))),
-        last_pin_timestamp:
-          json |> optional_(field("last_pin_timestamp", date)),
+          |> optionalField(field("permission_overwrites", array(overwrite))),
+        name: json |> optionalField(field("name", string)),
+        topic: json |> optionalField(field("topic", optional(string))),
+        nsfw: json |> optionalField(field("nsfw", bool)),
+        lastMessageId:
+          json |> optionalField(field("last_message_id", optional(string))),
+        bitrate: json |> optionalField(field("bitrate", int)),
+        userLimit: json |> optionalField(field("user_limit", int)),
+        rateLimitPerUser:
+          json |> optionalField(field("rate_limit_per_user", int)),
+        recipients:
+          json |> optionalField(field("recipients", array(User.t))),
+        icon: json |> optionalField(field("icon", optional(string))),
+        ownerId: json |> optionalField(field("owner_id", string)),
+        applicationId:
+          json |> optionalField(field("application_id", string)),
+        parentId:
+          json |> optionalField(field("parent_id", optional(string))),
+        lastPinTimestamp:
+          json |> optionalField(field("last_pin_timestamp", date)),
       };
   };
 
@@ -489,11 +533,11 @@ module Decode = {
       Json.Decode.{
         id: json |> field("id", optional(string)),
         name: json |> field("name", string),
-        roles: json |> optional_(field("roles", array(string))),
-        user: json |> optional_(field("user", User.t)),
-        require_colons: json |> optional_(field("require_colons", bool)),
-        managed: json |> optional_(field("managed", bool)),
-        animated: json |> optional_(field("animated", bool)),
+        roles: json |> optionalField(field("roles", array(string))),
+        user: json |> optionalField(field("user", User.t)),
+        requireColons: json |> optionalField(field("require_colons", bool)),
+        managed: json |> optionalField(field("managed", bool)),
+        animated: json |> optionalField(field("animated", bool)),
       };
   };
 
@@ -502,10 +546,10 @@ module Decode = {
 
     let state = json =>
       Json.Decode.{
-        guild_id: json |> field("guild_id", string),
-        channel_id: json |> field("channel_id", optional(string)),
-        user_id: json |> field("user_id", string),
-        member: json |> optional_(field("member", Guild_.member)),
+        guildId: json |> field("guild_id", string),
+        channelId: json |> field("channel_id", optional(string)),
+        userId: json |> field("user_id", string),
+        member: json |> optionalField(field("member", Guild_.member)),
       };
   }
   and Guild_: {
@@ -519,9 +563,9 @@ module Decode = {
     let member = json =>
       Json.Decode.{
         user: json |> field("user", User.t),
-        nick: json |> optional_(field("nick", string)),
+        nick: json |> optionalField(field("nick", string)),
         roles: json |> field("roles", array(string)),
-        joined_at: json |> field("joined_at", date),
+        joinedAt: json |> field("joined_at", date),
         deaf: json |> field("deaf", bool),
         mute: json |> field("mute", bool),
       };
@@ -538,44 +582,44 @@ module Decode = {
         name: json |> field("name", string),
         icon: json |> field("icon", optional(string)),
         splash: json |> field("splash", optional(string)),
-        owner: json |> optional_(field("owner", bool)),
-        owner_id: json |> field("owner_id", string),
-        permissions: json |> optional_(field("permissions", int)),
+        owner: json |> optionalField(field("owner", bool)),
+        ownerId: json |> field("owner_id", string),
+        permissions: json |> optionalField(field("permissions", int)),
         region: json |> field("region", string),
-        afk_channel_id: json |> field("afk_channel_id", optional(string)),
-        afk_timeout: json |> field("afk_timeout", int),
-        embed_enabled: json |> optional_(field("embed_enabled", bool)),
-        embed_channel_id:
-          json |> optional_(field("embed_channel_id", string)),
-        verification_level: json |> field("verification_level", int),
-        default_message_notifications:
+        afkChannelId: json |> field("afk_channel_id", optional(string)),
+        afkTimeout: json |> field("afk_timeout", int),
+        embedEnabled: json |> optionalField(field("embed_enabled", bool)),
+        embedChannelId:
+          json |> optionalField(field("embed_channel_id", string)),
+        verificationLevel: json |> field("verification_level", int),
+        defaultMessageNotifications:
           json |> field("default_message_notifications", int),
-        explicit_content_filter:
-          json |> field("explicit_content_filter", int),
+        explicitContentFilter: json |> field("explicit_content_filter", int),
         roles: json |> field("roles", array(Permissions.role)),
         emojis: json |> field("emojis", array(Emoji.t)),
         features: json |> field("features", array(string)),
-        mfa_level: json |> field("mfa_level", int),
-        application_id: json |> field("application_id", optional(string)),
-        widget_enabled: json |> optional_(field("widget_enabled", bool)),
-        widget_channel_id:
-          json |> optional_(field("widget_channel_id", string)),
-        system_channel_id:
+        mfaLevel: json |> field("mfa_level", int),
+        applicationId: json |> field("application_id", optional(string)),
+        widgetEnabled: json |> optionalField(field("widget_enabled", bool)),
+        widgetChannelId:
+          json |> optionalField(field("widget_channel_id", string)),
+        systemChannelId:
           json |> field("system_channel_id", optional(string)),
-        joined_at: json |> optional_(field("joined_at", date)),
-        large: json |> optional_(field("large", bool)),
-        unavailable: json |> optional_(field("unavailable", bool)),
-        member_count: json |> optional_(field("member_count", int)),
-        voice_states:
-          json |> optional_(field("voice_states", array(Voice_.state))),
-        members: json |> optional_(field("members", array(member))),
-        channels: json |> optional_(field("channels", array(Channel.t))),
+        joinedAt: json |> optionalField(field("joined_at", date)),
+        large: json |> optionalField(field("large", bool)),
+        unavailable: json |> optionalField(field("unavailable", bool)),
+        memberCount: json |> optionalField(field("member_count", int)),
+        voiceStates:
+          json |> optionalField(field("voice_states", array(Voice_.state))),
+        members: json |> optionalField(field("members", array(member))),
+        channels:
+          json |> optionalField(field("channels", array(Channel.t))),
         presences:
-          json |> optional_(field("presences", array(Presence.update))),
-        max_presences:
-          json |> optional_(field("max_presences", optional(int))),
-        max_members: json |> optional_(field("max_members", int)),
-        vanity_url_code: json |> field("vanity_url_code", optional(string)),
+          json |> optionalField(field("presences", array(Presence.update))),
+        maxPresences:
+          json |> optionalField(field("max_presences", optional(int))),
+        maxMembers: json |> optionalField(field("max_members", int)),
+        vanityUrlCode: json |> field("vanity_url_code", optional(string)),
         description: json |> field("description", optional(string)),
         banner: json |> field("banner", optional(string)),
       };
@@ -590,16 +634,16 @@ module Decode = {
     Json.Decode.{
       v: json |> field("v", int),
       user: json |> field("user", User.t),
-      private_channels: json |> field("private_channels", array(_ => ())),
+      privateChannels: json |> field("private_channels", array(_ => ())),
       guilds: json |> field("guilds", array(Guild.unavailable)),
-      session_id: json |> field("session_id", string),
+      sessionId: json |> field("session_id", string),
       trace: json |> field("_trace", array(string)),
-      shard: json |> optional_(field("shard", array(int))),
+      shard: json |> optionalField(field("shard", array(int))),
     };
 
   let hello = json =>
     Json.Decode.{
-      heartbeat_interval: json |> field("heartbeat_interval", int),
+      heartbeatInterval: json |> field("heartbeat_interval", int),
       trace: json |> field("_trace", array(string)),
     };
 
@@ -611,21 +655,23 @@ module Decode = {
         |> field("d", j =>
              switch (json |> field("op", int)) {
              | 0 =>
-               Event(
+               Dispatch(
                  switch (json |> field("t", string)) {
                  | "READY" => Ready(ready(j))
                  | "GUILD_CREATE" => GuildCreate(Guild.create(j))
                  | _ => raise(NotImplemented)
                  },
                )
+             | 7 => Reconnect
+             | 9 => InvalidSession(bool(j))
              | 10 => Hello(hello(j))
              | 11 => Ack
              | _ => raise(NotImplemented)
              }
            ),
 
-      s: json |> optional_(field("s", int)),
-      t: json |> optional_(field("t", string)),
+      s: json |> optionalField(field("s", int)),
+      t: json |> optionalField(field("t", string)),
     };
 };
 
@@ -638,13 +684,13 @@ module Encode = {
     | Missing => Missing
     };
 
-  let null_ = (encoder, r) =>
+  let nullOpt = (encoder, r) =>
     switch (r) {
     | None => Json.Encode.null
     | Some(x) => encoder(x)
     };
 
-  let object__ = fields =>
+  let objectOpt = fields =>
     List.fold_right(
       (b, a) =>
         switch (b) {
@@ -661,7 +707,7 @@ module Encode = {
 
     let timestamps = r =>
       Json.Encode.(
-        object__([
+        objectOpt([
           ("start", r.start |> optional(int)),
           ("end", r.end_ |> optional(int)),
         ])
@@ -669,7 +715,7 @@ module Encode = {
 
     let party = r =>
       Json.Encode.(
-        object__([
+        objectOpt([
           ("id", r.id |> optional(string)),
           ("size", r.size |> optional(array(int))),
         ])
@@ -677,17 +723,17 @@ module Encode = {
 
     let assets = r =>
       Json.Encode.(
-        object__([
-          ("large_image", r.large_image |> optional(string)),
-          ("large_text", r.large_text |> optional(string)),
-          ("small_image", r.small_image |> optional(string)),
-          ("small_text", r.small_text |> optional(string)),
+        objectOpt([
+          ("large_image", r.largeImage |> optional(string)),
+          ("large_text", r.largeText |> optional(string)),
+          ("small_image", r.smallImage |> optional(string)),
+          ("small_text", r.smallText |> optional(string)),
         ])
       );
 
     let secrets = r =>
       Json.Encode.(
-        object__([
+        objectOpt([
           ("join", r.join |> optional(string)),
           ("spectate", r.spectate |> optional(string)),
           ("match", r.match |> optional(string)),
@@ -696,14 +742,14 @@ module Encode = {
 
     let activity = r =>
       Json.Encode.(
-        object__([
+        objectOpt([
           ("name", r.name |> required(string)),
           ("type", r.type_ |> required(int)),
-          ("url", r.url |> optional(null_(string))),
+          ("url", r.url |> optional(nullOpt(string))),
           ("timestamps", r.timestamps |> optional(timestamps)),
-          ("application_id", r.application_id |> optional(string)),
-          ("details", r.details |> optional(null_(string))),
-          ("state", r.state |> optional(null_(string))),
+          ("application_id", r.applicationId |> optional(string)),
+          ("details", r.details |> optional(nullOpt(string))),
+          ("state", r.state |> optional(nullOpt(string))),
           ("party", r.party |> optional(party)),
           ("assets", r.assets |> optional(assets)),
           ("secrets", r.secrets |> optional(secrets)),
@@ -715,15 +761,15 @@ module Encode = {
 
   let updateStatus = r =>
     Json.Encode.(
-      object__([
-        ("since", r.since |> required(null_(int))),
-        ("game", r.game |> required(null_(Presence.activity))),
+      objectOpt([
+        ("since", r.since |> required(nullOpt(int))),
+        ("game", r.game |> required(nullOpt(Presence.activity))),
         ("status", r.status |> required(string)),
         ("afk", r.afk |> required(bool)),
       ])
     );
 
-  let heartbeat = null_(Json.Encode.int);
+  let heartbeat = nullOpt(Json.Encode.int);
 
   let props = r =>
     Json.Encode.(
@@ -734,27 +780,82 @@ module Encode = {
       ])
     );
 
-  let identify = r =>
+  let identify = (r: identify) =>
     Json.Encode.(
-      object__([
+      objectOpt([
         ("token", r.token |> required(string)),
         ("properties", r.properties |> required(props)),
         ("compress", r.compress |> optional(bool)),
-        ("large_threshold", r.large_threshold |> optional(int)),
+        ("large_threshold", r.largeThreshold |> optional(int)),
         ("shard", r.shard |> optional(array(int))),
         ("presence", r.presence |> optional(updateStatus)),
       ])
     );
 
+  let statusUpdate = r =>
+    Json.Encode.(
+      object_([
+        ("since", r.since |> nullOpt(int)),
+        ("game", r.game |> nullOpt(Presence.activity)),
+        ("status", r.status |> string),
+        ("afk", r.afk |> bool),
+      ])
+    );
+
+  let voiceStateUpdate = (r: voiceStateUpdate) =>
+    Json.Encode.(
+      object_([
+        ("guild_id", r.guildId |> string),
+        ("channel_id", r.channelId |> nullOpt(string)),
+        ("self_mute", r.selfMute |> bool),
+        ("self_deaf", r.selfDeaf |> bool),
+      ])
+    );
+
+  let resume = r =>
+    Json.Encode.(
+      object_([
+        ("token", r.token |> string),
+        ("session_id", r.sessionId |> string),
+        ("seq", r.seq |> int),
+      ])
+    );
+
+  let requestGuildMembers = (r: requestGuildMembers) =>
+    Json.Encode.(
+      object_([
+        ("guild_id", r.guildId |> string),
+        ("query", r.query |> string),
+        ("limit", r.limit |> int),
+      ])
+    );
+
+  let requestGuildMembersArr = (r: requestGuildMembersArr) =>
+    Json.Encode.(
+      object_([
+        ("guild_id", r.guildId |> array(string)),
+        ("query", r.query |> string),
+        ("limit", r.limit |> int),
+      ])
+    );
+
   let data = r =>
     Json.Encode.(
-      object__([
+      objectOpt([
         ("op", r.op |> required(int)),
         (
           "d",
           switch (r.d) {
           | Heartbeat(payload) => payload |> required(heartbeat)
           | Identify(payload) => payload |> required(identify)
+          | StatusUpdate(payload) => payload |> required(statusUpdate)
+          | VoiceStateUpdate(payload) =>
+            payload |> required(voiceStateUpdate)
+          | Resume(payload) => payload |> required(resume)
+          | RequestGuildMembers(payload) =>
+            payload |> required(requestGuildMembers)
+          | RequestGuildMembersArr(payload) =>
+            payload |> required(requestGuildMembersArr)
           | _ => Missing
           },
         ),
@@ -765,13 +866,21 @@ module Encode = {
 
   let dataFromPayload = r =>
     Json.Encode.(
-      object__([
+      objectOpt([
         ("op", op_of_payload(r) |> required(int)),
         (
           "d",
           switch (r) {
           | Heartbeat(payload) => payload |> required(heartbeat)
           | Identify(payload) => payload |> required(identify)
+          | StatusUpdate(payload) => payload |> required(statusUpdate)
+          | VoiceStateUpdate(payload) =>
+            payload |> required(voiceStateUpdate)
+          | Resume(payload) => payload |> required(resume)
+          | RequestGuildMembers(payload) =>
+            payload |> required(requestGuildMembers)
+          | RequestGuildMembersArr(payload) =>
+            payload |> required(requestGuildMembersArr)
           | _ => Missing
           },
         ),
