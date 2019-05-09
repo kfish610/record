@@ -39,47 +39,40 @@ let bot = settings =>
           `message(
             message => {
               Js.log(message);
-              let data =
-                try (Some(message |> Json.parseOrRaise |> Data.Decode.data)) {
-                | Data.NotImplemented => None
-                };
-              switch (data) {
-              | Some(data) =>
-                Js.log(data);
-                switch (data.d) {
-                | Hello(hello) =>
-                  Js.Global.setInterval(
-                    () =>
-                      ws
-                      ->send(
-                          Data.Encode.dataFromPayload(Heartbeat(None))
-                          |> Json.stringify,
-                        )
-                      ->ignore,
-                    hello.heartbeatInterval,
+              let data = message |> Json.parseOrRaise |> Data.Decode.data;
+              Js.log(data);
+              switch (data.d) {
+              | Hello(hello) =>
+                Js.Global.setInterval(
+                  () =>
+                    ws
+                    ->send(
+                        Data.Encode.dataFromPayload(Heartbeat(None))
+                        |> Json.stringify,
+                      )
+                    ->ignore,
+                  hello.heartbeatInterval,
+                )
+                |> ignore;
+                ws->send(
+                  Data.Encode.dataFromPayload(
+                    Identify({
+                      token: settings.token,
+                      properties: {
+                        os: Node.Process.process##platform,
+                        browser: "record",
+                        device: "record",
+                      },
+                      compress: Missing,
+                      largeThreshold: Missing,
+                      shard: Missing,
+                      presence: Missing,
+                    }),
                   )
-                  |> ignore;
-                  ws->send(
-                    Data.Encode.dataFromPayload(
-                      Identify({
-                        token: settings.token,
-                        properties: {
-                          os: Node.Process.process##platform,
-                          browser: "record",
-                          device: "record",
-                        },
-                        compress: Missing,
-                        largeThreshold: Missing,
-                        shard: Missing,
-                        presence: Missing,
-                      }),
-                    )
-                    |> Json.stringify,
-                  );
-                | Ack => ()
-                | _ => ()
-                };
-              | None => Js.log("Not Implemented")
+                  |> Json.stringify,
+                );
+              | Ack => ()
+              | _ => ()
               };
             },
           ),
