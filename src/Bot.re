@@ -39,40 +39,47 @@ let bot = settings =>
           `message(
             message => {
               Js.log(message);
-              let data = message |> Json.parseOrRaise |> Data.Decode.data;
-              Js.log(data);
-              switch (data.d) {
-              | Hello(hello) =>
-                Js.Global.setInterval(
-                  () =>
-                    ws
-                    ->send(
-                        Data.Encode.dataFromPayload(Heartbeat(Js.null))
-                        |> Json.stringify,
-                      )
-                    ->ignore,
-                  hello.heartbeat_interval,
-                )
-                |> ignore;
-                ws->send(
-                  Data.Encode.dataFromPayload(
-                    Identify({
-                      token: settings.token,
-                      properties: {
-                        os: Node.Process.process##platform,
-                        browser: "record",
-                        device: "record",
-                      },
-                      compress: None,
-                      large_threshold: None,
-                      shard: None,
-                      presence: None,
-                    }),
+              let data =
+                try (Some(message |> Json.parseOrRaise |> Data.Decode.data)) {
+                | Data.NotImplemented => None
+                };
+              switch (data) {
+              | Some(data) =>
+                Js.log(data);
+                switch (data.d) {
+                | Hello(hello) =>
+                  Js.Global.setInterval(
+                    () =>
+                      ws
+                      ->send(
+                          Data.Encode.dataFromPayload(Heartbeat(None))
+                          |> Json.stringify,
+                        )
+                      ->ignore,
+                    hello.heartbeat_interval,
                   )
-                  |> Json.stringify,
-                );
-              | Ack => ()
-              | _ => ()
+                  |> ignore;
+                  ws->send(
+                    Data.Encode.dataFromPayload(
+                      Identify({
+                        token: settings.token,
+                        properties: {
+                          os: Node.Process.process##platform,
+                          browser: "record",
+                          device: "record",
+                        },
+                        compress: Missing,
+                        large_threshold: Missing,
+                        shard: Missing,
+                        presence: Missing,
+                      }),
+                    )
+                    |> Json.stringify,
+                  );
+                | Ack => ()
+                | _ => ()
+                };
+              | None => Js.log("Not Implemented")
               };
             },
           ),
