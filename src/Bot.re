@@ -1,15 +1,17 @@
 [%%debugger.chrome];
+open Ws;
+
 type botSettings = {token: string};
 type t = {
   settings: botSettings,
-  ws: Ws.WebSocket.t,
+  ws: WebSocket.t,
 };
 exception SocketClosed(int, string);
 exception SocketError(Dom.errorEvent);
 let bot = settings =>
   Js.Promise.make((~resolve, ~reject) => {
-    let ws = Ws.WebSocket.make("wss://gateway.discord.gg/?v=6&encoding=json");
-    Ws.WebSocket.(
+    let ws = WebSocket.make("wss://gateway.discord.gg/?v=6&encoding=json");
+    WebSocket.(
       ws
       ->on(
           `open_(
@@ -30,7 +32,7 @@ let bot = settings =>
       ->on(
           `error(
             error => {
-              Js.log("Error: " ++ Ws.ErrorEvent.message(error));
+              Js.log("Error: " ++ ErrorEvent.message(error));
               reject(. SocketError(error));
             },
           ),
