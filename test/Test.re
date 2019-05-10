@@ -1,4 +1,4 @@
-open Bot;
+open Record.Bot;
 open Js.Promise;
 
 let token = Js.Json.parseExn(Node.Fs.readFileSync("bot-settings.json", `utf8)) -> Js.Json.decodeObject -> Belt.Option.getExn -> Js.Dict.get("token") -> Belt.Option.getExn -> Js.Json.decodeString -> Belt.Option.getExn

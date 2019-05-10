@@ -269,8 +269,13 @@ type ready = {
   shard: optional(array(int)),
 };
 
+type resumed = {
+  trace: array(string)
+};
+
 type dispatch =
   | Ready(ready)
+  | Resumed(resumed)
   | GuildCreate(Guild.t);
 
 type heartbeat = option(int);
@@ -370,6 +375,7 @@ let t_of_payload = payload =>
     Field(
       switch (dispatch) {
       | Ready(_) => "READY"
+      | Resumed(_) => "RESUMED"
       | GuildCreate(_) => "GUILD_CREATE"
       },
     )
@@ -641,6 +647,11 @@ module Decode = {
       shard: json |> optionalField(field("shard", array(int))),
     };
 
+  let resumed = json =>
+    Json.Decode.{
+      trace: json |> field("_trace", array(string))
+    }
+
   let hello = json =>
     Json.Decode.{
       heartbeatInterval: json |> field("heartbeat_interval", int),
@@ -658,6 +669,7 @@ module Decode = {
                Dispatch(
                  switch (json |> field("t", string)) {
                  | "READY" => Ready(ready(j))
+                 | "RESUMED" => Resumed(resumed(j))
                  | "GUILD_CREATE" => GuildCreate(Guild.create(j))
                  | _ => raise(NotImplemented)
                  },
