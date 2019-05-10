@@ -116,6 +116,14 @@ module Channel = {
     parentId: optional(option(snowflake)),
     lastPinTimestamp: optional(Js.Date.t),
   };
+
+  type create = t
+  type update = t
+  type delete = t
+  type pinsUpdate = {
+    channelId: snowflake,
+    lastPinTimestamp: optional(Js.Date.t)
+  }
 };
 
 module Emoji = {
@@ -276,6 +284,10 @@ type resumed = {
 type dispatch =
   | Ready(ready)
   | Resumed(resumed)
+  | ChannelCreate(Channel.create)
+  | ChannelUpdate(Channel.update)
+  | ChannelDelete(Channel.delete)
+  | ChannelPinsUpdate(Channel.pinsUpdate)
   | GuildCreate(Guild.t);
 
 type heartbeat = option(int);
@@ -376,6 +388,10 @@ let t_of_payload = payload =>
       switch (dispatch) {
       | Ready(_) => "READY"
       | Resumed(_) => "RESUMED"
+      | ChannelCreate(_) => "CHANNEL_CREATE"
+      | ChannelUpdate(_) => "CHANNEL_UPDATE"
+      | ChannelDelete(_) => "CHANNEL_DELETE"
+      | ChannelPinsUpdate(_) => "CHANNEL_PINS_UPDATE"
       | GuildCreate(_) => "GUILD_CREATE"
       },
     )
@@ -530,6 +546,15 @@ module Decode = {
         lastPinTimestamp:
           json |> optionalField(field("last_pin_timestamp", date)),
       };
+
+      let create = t;
+      let update = t;
+      let delete = t;
+      let pinsUpdate = json =>
+        Json.Decode.{
+          channelId: json |> field("channel_id", string),
+          lastPinTimestamp: json |> optionalField(field("last_pin_timestamp", date))
+        };
   };
 
   module Emoji = {
@@ -670,6 +695,10 @@ module Decode = {
                  switch (json |> field("t", string)) {
                  | "READY" => Ready(ready(j))
                  | "RESUMED" => Resumed(resumed(j))
+                 | "CHANNEL_CREATE" => ChannelCreate(Channel.create(j))
+                 | "CHANNEL_UPDATE" => ChannelUpdate(Channel.update(j))
+                 | "CHANNEL_DELETE" => ChannelDelete(Channel.delete(j))
+                 | "CHANNEL_PINS_UPDATE" => ChannelPinsUpdate(Channel.pinsUpdate(j))
                  | "GUILD_CREATE" => GuildCreate(Guild.create(j))
                  | _ => raise(NotImplemented)
                  },
