@@ -117,13 +117,13 @@ module Channel = {
     lastPinTimestamp: optional(Js.Date.t),
   };
 
-  type create = t
-  type update = t
-  type delete = t
+  type create = t;
+  type update = t;
+  type delete = t;
   type pinsUpdate = {
     channelId: snowflake,
-    lastPinTimestamp: optional(Js.Date.t)
-  }
+    lastPinTimestamp: optional(Js.Date.t),
+  };
 };
 
 module Emoji = {
@@ -265,7 +265,158 @@ and Guild: {
   type create = t;
 };
 
-exception NotImplemented;
+module Message = {
+  type attachment = {
+    id: snowflake,
+    filename: string,
+    size: int,
+    url: string,
+    proxyUrl: string,
+    height: option(int),
+    width: option(int),
+  };
+
+  type embedFooter = {
+    text: string,
+    iconUrl: optional(string),
+    proxyIconUrl: optional(string),
+  };
+
+  type embedImage = {
+    url: optional(string),
+    proxyUrl: optional(string),
+    height: optional(int),
+    width: optional(int),
+  };
+
+  type embedThumbnail = {
+    url: optional(string),
+    proxyUrl: optional(string),
+    height: optional(int),
+    width: optional(int),
+  };
+
+  type embedVideo = {
+    url: optional(string),
+    height: optional(int),
+    width: optional(int),
+  };
+
+  type embedProvider = {
+    name: optional(string),
+    url: optional(string),
+  };
+
+  type embedAuthor = {
+    name: optional(string),
+    url: optional(string),
+    iconUrl: optional(string),
+    proxyIconUrl: optional(string),
+  };
+
+  type embedField = {
+    name: string,
+    value: string,
+    inline: optional(bool),
+  };
+
+  type embed = {
+    title: optional(string),
+    type_: optional(string),
+    description: optional(string),
+    url: optional(string),
+    timestamp: optional(Js.Date.t),
+    color: optional(int),
+    footer: optional(embedFooter),
+    image: optional(embedImage),
+    thumbnail: optional(embedThumbnail),
+    video: optional(embedVideo),
+    provider: optional(embedProvider),
+    author: optional(embedAuthor),
+    field: optional(array(embedField)),
+  };
+
+  type reaction = {
+    count: int,
+    me: bool,
+    emoji: Emoji.t,
+  };
+
+  type activity = {
+    type_: int,
+    partyId: optional(string),
+  };
+
+  type application = {
+    id: snowflake,
+    coverImage: optional(string),
+    description: string,
+    icon: option(string),
+    name: string,
+  };
+
+  type t = {
+    id: snowflake,
+    channelId: snowflake,
+    guildId: optional(snowflake),
+    author: User.t,
+    member: optional(Guild.member),
+    content: string,
+    timestamp: Js.Date.t,
+    editedTimestamp: option(Js.Date.t),
+    tts: bool,
+    mentionEveryone: bool,
+    mentions: array(User.t),
+    mentionRoles: array(snowflake),
+    attachments: array(attachment),
+    embeds: array(embed),
+    reactions: optional(array(reaction)),
+    nonce: optional(option(snowflake)),
+    pinned: bool,
+    webhookId: optional(snowflake),
+    type_: int,
+    activity: optional(activity),
+    application: optional(application),
+  };
+
+  type create = t;
+  type update = t;
+  type delete = {
+    id: snowflake,
+    channelId: snowflake,
+    guildId: snowflake,
+  };
+
+  type deleteBulk = {
+    ids: array(snowflake),
+    channelId: snowflake,
+    guildId: snowflake,
+  };
+
+  type reactionAdd = {
+    userId: snowflake,
+    channelId: snowflake,
+    messageId: snowflake,
+    guildId: optional(snowflake),
+    emoji: Emoji.t,
+  };
+
+  type reactionRemove = {
+    userId: snowflake,
+    channelId: snowflake,
+    messageId: snowflake,
+    guildId: optional(snowflake),
+    emoji: Emoji.t,
+  };
+
+  type reactionRemoveAll = {
+    channelId: snowflake,
+    messageId: snowflake,
+    guildId: optional(snowflake),
+  };
+};
+
+exception UnknownMessage(Js.Json.t);
 
 type ready = {
   v: int,
@@ -277,8 +428,13 @@ type ready = {
   shard: optional(array(int)),
 };
 
-type resumed = {
-  trace: array(string)
+type resumed = {trace: array(string)};
+
+type typingStart = {
+  channelId: snowflake,
+  guildId: optional(snowflake),
+  userId: snowflake,
+  timestamp: int,
 };
 
 type dispatch =
@@ -288,7 +444,15 @@ type dispatch =
   | ChannelUpdate(Channel.update)
   | ChannelDelete(Channel.delete)
   | ChannelPinsUpdate(Channel.pinsUpdate)
-  | GuildCreate(Guild.t);
+  | GuildCreate(Guild.t)
+  | MessageCreate(Message.create)
+  | MessageUpdate(Message.update)
+  | MessageDelete(Message.delete)
+  | MessageDeleteBulk(Message.deleteBulk)
+  | MessageReactionAdd(Message.reactionAdd)
+  | MessageReactionRemove(Message.reactionRemove)
+  | MessageReactionRemoveAll(Message.reactionRemoveAll)
+  | TypingStart(typingStart);
 
 type heartbeat = option(int);
 
@@ -331,7 +495,7 @@ type requestGuildMembers = {
   limit: int,
 };
 
-type requestGuildMembersArr = {
+type requestGuildMembersBulk = {
   guildId: array(snowflake),
   query: string,
   limit: int,
@@ -353,7 +517,7 @@ type payload =
   | Resume(resume)
   | Reconnect
   | RequestGuildMembers(requestGuildMembers)
-  | RequestGuildMembersArr(requestGuildMembersArr)
+  | RequestGuildMembersBulk(requestGuildMembersBulk)
   | InvalidSession(invalidSession)
   | Hello(hello)
   | Ack;
@@ -375,7 +539,7 @@ let op_of_payload = payload =>
   | Resume(_) => 6
   | Reconnect => 7
   | RequestGuildMembers(_) => 8
-  | RequestGuildMembersArr(_) => 8
+  | RequestGuildMembersBulk(_) => 8
   | InvalidSession(_) => 9
   | Hello(_) => 10
   | Ack => 11
@@ -393,14 +557,22 @@ let t_of_payload = payload =>
       | ChannelDelete(_) => "CHANNEL_DELETE"
       | ChannelPinsUpdate(_) => "CHANNEL_PINS_UPDATE"
       | GuildCreate(_) => "GUILD_CREATE"
+      | MessageCreate(_) => "MESSAGE_CREATE"
+      | MessageUpdate(_) => "MESSAGE_UPDATE"
+      | MessageDelete(_) => "MESSAGE_DELETE"
+      | MessageDeleteBulk(_) => "MESSAGE_DELETE_BULK"
+      | MessageReactionAdd(_) => "MESSAGE_REACTION_ADD"
+      | MessageReactionRemove(_) => "MESSAGE_REACTION_REMOVE"
+      | MessageReactionRemoveAll(_) => "MESSAGE_REACTION_REMOVE_ALL"
+      | TypingStart(_) => "TYPING_START"
       },
     )
   | _ => Missing
   };
 
 module Decode = {
-  let optionalField = (decoder, json) =>
-    switch (json |> Json.Decode.optional(decoder)) {
+  let optionalField = (key, decoder, json) =>
+    switch (json |> Json.Decode.optional(Json.Decode.field(key, decoder))) {
     | Some(x) => Field(x)
     | None => Missing
     };
@@ -430,13 +602,13 @@ module Decode = {
         username: json |> field("username", string),
         discriminator: json |> field("discriminator", string),
         avatar: json |> field("avatar", optional(string)),
-        bot: json |> field("bot", optionalField(bool)),
-        mfaEnabled: json |> optionalField(field("mfa_enabled", bool)),
-        locale: json |> optionalField(field("locale", string)),
-        verified: json |> optionalField(field("verified", bool)),
-        email: json |> optionalField(field("email", string)),
-        flags: json |> optionalField(field("flags", int)),
-        premiumType: json |> optionalField(field("premium_type", int)),
+        bot: json |> optionalField("bot", bool),
+        mfaEnabled: json |> optionalField("mfa_enabled", bool),
+        locale: json |> optionalField("locale", string),
+        verified: json |> optionalField("verified", bool),
+        email: json |> optionalField("email", string),
+        flags: json |> optionalField("flags", int),
+        premiumType: json |> optionalField("premium_type", int),
       };
   };
 
@@ -445,53 +617,52 @@ module Decode = {
 
     let timestamps = json =>
       Json.Decode.{
-        start: json |> optionalField(field("start", int)),
-        end_: json |> optionalField(field("end", int)),
+        start: json |> optionalField("start", int),
+        end_: json |> optionalField("end", int),
       };
 
     let party = json =>
       Json.Decode.{
-        id: json |> optionalField(field("id", string)),
-        size: json |> optionalField(field("size", array(int))),
+        id: json |> optionalField("id", string),
+        size: json |> optionalField("size", array(int)),
       };
 
     let assets = json =>
       Json.Decode.{
-        largeImage: json |> optionalField(field("large_image", string)),
-        largeText: json |> optionalField(field("large_text", string)),
-        smallImage: json |> optionalField(field("small_image", string)),
-        smallText: json |> optionalField(field("small_text", string)),
+        largeImage: json |> optionalField("large_image", string),
+        largeText: json |> optionalField("large_text", string),
+        smallImage: json |> optionalField("small_image", string),
+        smallText: json |> optionalField("small_text", string),
       };
 
     let secrets = json =>
       Json.Decode.{
-        join: json |> optionalField(field("join", string)),
-        spectate: json |> optionalField(field("spectate", string)),
-        match: json |> optionalField(field("match", string)),
+        join: json |> optionalField("join", string),
+        spectate: json |> optionalField("spectate", string),
+        match: json |> optionalField("match", string),
       };
 
     let activity = json =>
       Json.Decode.{
         name: json |> field("name", string),
         type_: json |> field("type", int),
-        url: json |> optionalField(field("url", optional(string))),
-        timestamps: json |> optionalField(field("timestamps", timestamps)),
-        applicationId:
-          json |> optionalField(field("application_id", string)),
-        details: json |> optionalField(field("details", optional(string))),
-        state: json |> optionalField(field("state", optional(string))),
-        party: json |> optionalField(field("party", party)),
-        assets: json |> optionalField(field("assets", assets)),
-        secrets: json |> optionalField(field("secrets", secrets)),
-        instance: json |> optionalField(field("instance", bool)),
-        flags: json |> optionalField(field("flags", int)),
+        url: json |> optionalField("url", optional(string)),
+        timestamps: json |> optionalField("timestamps", timestamps),
+        applicationId: json |> optionalField("application_id", string),
+        details: json |> optionalField("details", optional(string)),
+        state: json |> optionalField("state", optional(string)),
+        party: json |> optionalField("party", party),
+        assets: json |> optionalField("assets", assets),
+        secrets: json |> optionalField("secrets", secrets),
+        instance: json |> optionalField("instance", bool),
+        flags: json |> optionalField("flags", int),
       };
 
     let clientStatus = json =>
       Json.Decode.{
-        desktop: json |> optionalField(field("desktop", string)),
-        mobile: json |> optionalField(field("mobile", string)),
-        web: json |> optionalField(field("web", string)),
+        desktop: json |> optionalField("desktop", string),
+        mobile: json |> optionalField("mobile", string),
+        web: json |> optionalField("web", string),
       };
 
     let update = json =>
@@ -521,40 +692,34 @@ module Decode = {
       Json.Decode.{
         id: json |> field("id", string),
         type_: json |> field("type", int),
-        guildId: json |> optionalField(field("guild_id", string)),
-        position: json |> optionalField(field("position", int)),
+        guildId: json |> optionalField("guild_id", string),
+        position: json |> optionalField("position", int),
         permissionOverwrites:
-          json
-          |> optionalField(field("permission_overwrites", array(overwrite))),
-        name: json |> optionalField(field("name", string)),
-        topic: json |> optionalField(field("topic", optional(string))),
-        nsfw: json |> optionalField(field("nsfw", bool)),
+          json |> optionalField("permission_overwrites", array(overwrite)),
+        name: json |> optionalField("name", string),
+        topic: json |> optionalField("topic", optional(string)),
+        nsfw: json |> optionalField("nsfw", bool),
         lastMessageId:
-          json |> optionalField(field("last_message_id", optional(string))),
-        bitrate: json |> optionalField(field("bitrate", int)),
-        userLimit: json |> optionalField(field("user_limit", int)),
-        rateLimitPerUser:
-          json |> optionalField(field("rate_limit_per_user", int)),
-        recipients:
-          json |> optionalField(field("recipients", array(User.t))),
-        icon: json |> optionalField(field("icon", optional(string))),
-        ownerId: json |> optionalField(field("owner_id", string)),
-        applicationId:
-          json |> optionalField(field("application_id", string)),
-        parentId:
-          json |> optionalField(field("parent_id", optional(string))),
-        lastPinTimestamp:
-          json |> optionalField(field("last_pin_timestamp", date)),
+          json |> optionalField("last_message_id", optional(string)),
+        bitrate: json |> optionalField("bitrate", int),
+        userLimit: json |> optionalField("user_limit", int),
+        rateLimitPerUser: json |> optionalField("rate_limit_per_user", int),
+        recipients: json |> optionalField("recipients", array(User.t)),
+        icon: json |> optionalField("icon", optional(string)),
+        ownerId: json |> optionalField("owner_id", string),
+        applicationId: json |> optionalField("application_id", string),
+        parentId: json |> optionalField("parent_id", optional(string)),
+        lastPinTimestamp: json |> optionalField("last_pin_timestamp", date),
       };
 
-      let create = t;
-      let update = t;
-      let delete = t;
-      let pinsUpdate = json =>
-        Json.Decode.{
-          channelId: json |> field("channel_id", string),
-          lastPinTimestamp: json |> optionalField(field("last_pin_timestamp", date))
-        };
+    let create = t;
+    let update = t;
+    let delete = t;
+    let pinsUpdate = json =>
+      Json.Decode.{
+        channelId: json |> field("channel_id", string),
+        lastPinTimestamp: json |> optionalField("last_pin_timestamp", date),
+      };
   };
 
   module Emoji = {
@@ -564,11 +729,11 @@ module Decode = {
       Json.Decode.{
         id: json |> field("id", optional(string)),
         name: json |> field("name", string),
-        roles: json |> optionalField(field("roles", array(string))),
-        user: json |> optionalField(field("user", User.t)),
-        requireColons: json |> optionalField(field("require_colons", bool)),
-        managed: json |> optionalField(field("managed", bool)),
-        animated: json |> optionalField(field("animated", bool)),
+        roles: json |> optionalField("roles", array(string)),
+        user: json |> optionalField("user", User.t),
+        requireColons: json |> optionalField("require_colons", bool),
+        managed: json |> optionalField("managed", bool),
+        animated: json |> optionalField("animated", bool),
       };
   };
 
@@ -580,7 +745,7 @@ module Decode = {
         guildId: json |> field("guild_id", string),
         channelId: json |> field("channel_id", optional(string)),
         userId: json |> field("user_id", string),
-        member: json |> optionalField(field("member", Guild_.member)),
+        member: json |> optionalField("member", Guild_.member),
       };
   }
   and Guild_: {
@@ -594,7 +759,7 @@ module Decode = {
     let member = json =>
       Json.Decode.{
         user: json |> field("user", User.t),
-        nick: json |> optionalField(field("nick", string)),
+        nick: json |> optionalField("nick", string),
         roles: json |> field("roles", array(string)),
         joinedAt: json |> field("joined_at", date),
         deaf: json |> field("deaf", bool),
@@ -613,15 +778,14 @@ module Decode = {
         name: json |> field("name", string),
         icon: json |> field("icon", optional(string)),
         splash: json |> field("splash", optional(string)),
-        owner: json |> optionalField(field("owner", bool)),
+        owner: json |> optionalField("owner", bool),
         ownerId: json |> field("owner_id", string),
-        permissions: json |> optionalField(field("permissions", int)),
+        permissions: json |> optionalField("permissions", int),
         region: json |> field("region", string),
         afkChannelId: json |> field("afk_channel_id", optional(string)),
         afkTimeout: json |> field("afk_timeout", int),
-        embedEnabled: json |> optionalField(field("embed_enabled", bool)),
-        embedChannelId:
-          json |> optionalField(field("embed_channel_id", string)),
+        embedEnabled: json |> optionalField("embed_enabled", bool),
+        embedChannelId: json |> optionalField("embed_channel_id", string),
         verificationLevel: json |> field("verification_level", int),
         defaultMessageNotifications:
           json |> field("default_message_notifications", int),
@@ -631,25 +795,22 @@ module Decode = {
         features: json |> field("features", array(string)),
         mfaLevel: json |> field("mfa_level", int),
         applicationId: json |> field("application_id", optional(string)),
-        widgetEnabled: json |> optionalField(field("widget_enabled", bool)),
-        widgetChannelId:
-          json |> optionalField(field("widget_channel_id", string)),
+        widgetEnabled: json |> optionalField("widget_enabled", bool),
+        widgetChannelId: json |> optionalField("widget_channel_id", string),
         systemChannelId:
           json |> field("system_channel_id", optional(string)),
-        joinedAt: json |> optionalField(field("joined_at", date)),
-        large: json |> optionalField(field("large", bool)),
-        unavailable: json |> optionalField(field("unavailable", bool)),
-        memberCount: json |> optionalField(field("member_count", int)),
+        joinedAt: json |> optionalField("joined_at", date),
+        large: json |> optionalField("large", bool),
+        unavailable: json |> optionalField("unavailable", bool),
+        memberCount: json |> optionalField("member_count", int),
         voiceStates:
-          json |> optionalField(field("voice_states", array(Voice_.state))),
-        members: json |> optionalField(field("members", array(member))),
-        channels:
-          json |> optionalField(field("channels", array(Channel.t))),
+          json |> optionalField("voice_states", array(Voice_.state)),
+        members: json |> optionalField("members", array(member)),
+        channels: json |> optionalField("channels", array(Channel.t)),
         presences:
-          json |> optionalField(field("presences", array(Presence.update))),
-        maxPresences:
-          json |> optionalField(field("max_presences", optional(int))),
-        maxMembers: json |> optionalField(field("max_members", int)),
+          json |> optionalField("presences", array(Presence.update)),
+        maxPresences: json |> optionalField("max_presences", optional(int)),
+        maxMembers: json |> optionalField("max_members", int),
         vanityUrlCode: json |> field("vanity_url_code", optional(string)),
         description: json |> field("description", optional(string)),
         banner: json |> field("banner", optional(string)),
@@ -661,6 +822,181 @@ module Decode = {
   module Voice = Voice_;
   module Guild = Guild_;
 
+  module Message = {
+    open Message;
+
+    let attachment = json =>
+      Json.Decode.{
+        id: json |> field("id", string),
+        filename: json |> field("filename", string),
+        size: json |> field("size", int),
+        url: json |> field("url", string),
+        proxyUrl: json |> field("proxy_url", string),
+        height: json |> field("height", optional(int)),
+        width: json |> field("width", optional(int)),
+      };
+
+    let embedFooter = json =>
+      Json.Decode.{
+        text: json |> field("text", string),
+        iconUrl: json |> optionalField("icon_url", string),
+        proxyIconUrl: json |> optionalField("proxy_icon_url", string),
+      };
+
+    let embedImage: Js.Json.t => embedImage =
+      json =>
+        Json.Decode.{
+          url: json |> optionalField("url", string),
+          proxyUrl: json |> optionalField("proxy_url", string),
+          height: json |> optionalField("height", int),
+          width: json |> optionalField("width", int),
+        };
+
+    let embedThumbnail: Js.Json.t => embedThumbnail =
+      json =>
+        Json.Decode.{
+          url: json |> optionalField("url", string),
+          proxyUrl: json |> optionalField("proxy_url", string),
+          height: json |> optionalField("height", int),
+          width: json |> optionalField("width", int),
+        };
+
+    let embedVideo = json =>
+      Json.Decode.{
+        url: json |> optionalField("url", string),
+        height: json |> optionalField("height", int),
+        width: json |> optionalField("width", int),
+      };
+
+    let embedProvider = json =>
+      Json.Decode.{
+        name: json |> optionalField("name", string),
+        url: json |> optionalField("url", string),
+      };
+
+    let embedAuthor = json =>
+      Json.Decode.{
+        name: json |> optionalField("name", string),
+        url: json |> optionalField("url", string),
+        iconUrl: json |> optionalField("icon_url", string),
+        proxyIconUrl: json |> optionalField("proxy_icon_url", string),
+      };
+
+    let embedField = json =>
+      Json.Decode.{
+        name: json |> field("name", string),
+        value: json |> field("value", string),
+        inline: json |> optionalField("inline", bool),
+      };
+
+    let embed = json =>
+      Json.Decode.{
+        title: json |> optionalField("title", string),
+        type_: json |> optionalField("type", string),
+        description: json |> optionalField("description", string),
+        url: json |> optionalField("url", string),
+        timestamp: json |> optionalField("timestamp", date),
+        color: json |> optionalField("color", int),
+        footer: json |> optionalField("footer", embedFooter),
+        image: json |> optionalField("image", embedImage),
+        thumbnail: json |> optionalField("thumbnail", embedThumbnail),
+        video: json |> optionalField("video", embedVideo),
+        provider: json |> optionalField("provider", embedProvider),
+        author: json |> optionalField("author", embedAuthor),
+        field: json |> optionalField("field", array(embedField)),
+      };
+
+    let reaction = json =>
+      Json.Decode.{
+        count: json |> field("count", int),
+        me: json |> field("me", bool),
+        emoji: json |> field("emoji", Emoji.t),
+      };
+
+    let activity = json =>
+      Json.Decode.{
+        type_: json |> field("type", int),
+        partyId: json |> optionalField("party_id", string),
+      };
+
+    let application = json =>
+      Json.Decode.{
+        id: json |> field("id", string),
+        coverImage: json |> optionalField("cover_image", string),
+        description: json |> field("description", string),
+        icon: json |> field("icon", optional(string)),
+        name: json |> field("name", string),
+      };
+
+    let t = json =>
+      Json.Decode.{
+        id: json |> field("id", string),
+        channelId: json |> field("channel_id", string),
+        guildId: json |> optionalField("guild_id", string),
+        author: json |> field("author", User.t),
+        member: json |> optionalField("member", Guild.member),
+        content: json |> field("content", string),
+        timestamp: json |> field("timestamp", date),
+        editedTimestamp: json |> field("edited_timestamp", optional(date)),
+        tts: json |> field("tts", bool),
+        mentionEveryone: json |> field("mention_everyone", bool),
+        mentions: json |> field("mentions", array(User.t)),
+        mentionRoles: json |> field("mention_roles", array(string)),
+        attachments: json |> field("attachments", array(attachment)),
+        embeds: json |> field("embeds", array(embed)),
+        reactions: json |> optionalField("reactions", array(reaction)),
+        nonce: json |> optionalField("nonce", optional(string)),
+        pinned: json |> field("pinned", bool),
+        webhookId: json |> optionalField("webhook_id", string),
+        type_: json |> field("type", int),
+        activity: json |> optionalField("activity", activity),
+        application: json |> optionalField("application", application),
+      };
+
+    let create = t;
+    let update = t;
+    let delete = json =>
+      Json.Decode.{
+        id: json |> field("id", string),
+        channelId: json |> field("channel_id", string),
+        guildId: json |> field("guild_id", string),
+      };
+
+    let deleteBulk = json =>
+      Json.Decode.{
+        ids: json |> field("ids", array(string)),
+        channelId: json |> field("channel_id", string),
+        guildId: json |> field("guild_id", string),
+      };
+
+    let reactionAdd: Js.Json.t => reactionAdd =
+      json =>
+        Json.Decode.{
+          userId: json |> field("user_id", string),
+          channelId: json |> field("channel_id", string),
+          messageId: json |> field("message_id", string),
+          guildId: json |> optionalField("guild_id", string),
+          emoji: json |> field("emoji", Emoji.t),
+        };
+
+    let reactionRemove: Js.Json.t => reactionRemove =
+      json =>
+        Json.Decode.{
+          userId: json |> field("user_id", string),
+          channelId: json |> field("channel_id", string),
+          messageId: json |> field("message_id", string),
+          guildId: json |> optionalField("guild_id", string),
+          emoji: json |> field("emoji", Emoji.t),
+        };
+
+    let reactionRemoveAll = json =>
+      Json.Decode.{
+        channelId: json |> field("channel_id", string),
+        messageId: json |> field("message_id", string),
+        guildId: json |> optionalField("guild_id", string),
+      };
+  };
+
   let ready = json =>
     Json.Decode.{
       v: json |> field("v", int),
@@ -669,13 +1005,19 @@ module Decode = {
       guilds: json |> field("guilds", array(Guild.unavailable)),
       sessionId: json |> field("session_id", string),
       trace: json |> field("_trace", array(string)),
-      shard: json |> optionalField(field("shard", array(int))),
+      shard: json |> optionalField("shard", array(int)),
     };
 
   let resumed = json =>
+    Json.Decode.{trace: json |> field("_trace", array(string))};
+
+  let typingStart = json =>
     Json.Decode.{
-      trace: json |> field("_trace", array(string))
-    }
+      channelId: json |> field("channel_id", string),
+      guildId: json |> optionalField("guild_id", string),
+      userId: json |> field("user_id", string),
+      timestamp: json |> field("timestamp", int),
+    };
 
   let hello = json =>
     Json.Decode.{
@@ -698,21 +1040,34 @@ module Decode = {
                  | "CHANNEL_CREATE" => ChannelCreate(Channel.create(j))
                  | "CHANNEL_UPDATE" => ChannelUpdate(Channel.update(j))
                  | "CHANNEL_DELETE" => ChannelDelete(Channel.delete(j))
-                 | "CHANNEL_PINS_UPDATE" => ChannelPinsUpdate(Channel.pinsUpdate(j))
+                 | "CHANNEL_PINS_UPDATE" =>
+                   ChannelPinsUpdate(Channel.pinsUpdate(j))
                  | "GUILD_CREATE" => GuildCreate(Guild.create(j))
-                 | _ => raise(NotImplemented)
+                 | "MESSAGE_CREATE" => MessageCreate(Message.create(j))
+                 | "MESSAGE_UPDATE" => MessageUpdate(Message.update(j))
+                 | "MESSAGE_DELETE" => MessageDelete(Message.delete(j))
+                 | "MESSAGE_DELETE_BULK" =>
+                   MessageDeleteBulk(Message.deleteBulk(j))
+                 | "MESSAGE_REACTION_ADD" =>
+                   MessageReactionAdd(Message.reactionAdd(j))
+                 | "MESSAGE_REACTION_REMOVE" =>
+                   MessageReactionRemove(Message.reactionRemove(j))
+                 | "MESSAGE_REACTION_REMOVE_ALL" =>
+                   MessageReactionRemoveAll(Message.reactionRemoveAll(j))
+                 | "TYPING_START" => TypingStart(typingStart(j))
+                 | _ => raise(UnknownMessage(json))
                  },
                )
              | 7 => Reconnect
              | 9 => InvalidSession(bool(j))
              | 10 => Hello(hello(j))
              | 11 => Ack
-             | _ => raise(NotImplemented)
+             | _ => raise(UnknownMessage(json))
              }
            ),
 
-      s: json |> optionalField(field("s", int)),
-      t: json |> optionalField(field("t", string)),
+      s: json |> optionalField("s", int),
+      t: json |> optionalField("t", string),
     };
 };
 
@@ -871,7 +1226,7 @@ module Encode = {
       ])
     );
 
-  let requestGuildMembersArr = (r: requestGuildMembersArr) =>
+  let requestGuildMembersBulk = (r: requestGuildMembersBulk) =>
     Json.Encode.(
       object_([
         ("guild_id", r.guildId |> array(string)),
@@ -895,8 +1250,8 @@ module Encode = {
           | Resume(payload) => payload |> required(resume)
           | RequestGuildMembers(payload) =>
             payload |> required(requestGuildMembers)
-          | RequestGuildMembersArr(payload) =>
-            payload |> required(requestGuildMembersArr)
+          | RequestGuildMembersBulk(payload) =>
+            payload |> required(requestGuildMembersBulk)
           | _ => Missing
           },
         ),
@@ -920,8 +1275,8 @@ module Encode = {
           | Resume(payload) => payload |> required(resume)
           | RequestGuildMembers(payload) =>
             payload |> required(requestGuildMembers)
-          | RequestGuildMembersArr(payload) =>
-            payload |> required(requestGuildMembersArr)
+          | RequestGuildMembersBulk(payload) =>
+            payload |> required(requestGuildMembersBulk)
           | _ => Missing
           },
         ),

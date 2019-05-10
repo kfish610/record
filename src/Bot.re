@@ -39,11 +39,8 @@ let bot = settings =>
         )
       ->on(
           `message(
-            message => {
-              Js.log(message);
-              let data = message |> Json.parseOrRaise |> Data.Decode.data;
-              Js.log(data);
-              switch (data.d) {
+            message =>
+              switch ((message |> Json.parseOrRaise |> Data.Decode.data).d) {
               | Hello(hello) =>
                 Js.Global.setInterval(
                   () =>
@@ -74,9 +71,10 @@ let bot = settings =>
                   |> Json.stringify,
                 );
               | Ack => ()
-              | _ => ()
-              };
-            },
+              | x =>
+                Js.log(message);
+                Js.log(x);
+              },
           ),
         )
       ->ignore
