@@ -4,6 +4,13 @@ type optional('a) =
 
 type snowflake = string;
 
+module Webhook = {
+  type update = {
+    guildId: snowflake,
+    channelId: snowflake,
+  };
+};
+
 module Permissions = {
   type role = {
     id: snowflake,
@@ -20,7 +27,7 @@ module Permissions = {
 module User = {
   type t = {
     id: snowflake,
-    username: string,
+    username: optional(string),
     discriminator: string,
     avatar: option(string),
     bot: optional(bool),
@@ -31,6 +38,8 @@ module User = {
     flags: optional(int),
     premiumType: optional(int),
   };
+
+  type update = t;
 };
 
 module Presence = {
@@ -145,12 +154,28 @@ module rec Voice: {
     userId: snowflake,
     member: optional(Guild.member),
   };
+
+  type update = state;
+
+  type serverUpdate = {
+    token: string,
+    guildId: snowflake,
+    endpoint: string,
+  };
 } = {
   type state = {
     guildId: snowflake,
     channelId: option(snowflake),
     userId: snowflake,
     member: optional(Guild.member),
+  };
+
+  type update = state;
+
+  type serverUpdate = {
+    token: string,
+    guildId: snowflake,
+    endpoint: string,
   };
 }
 and Guild: {
@@ -208,6 +233,61 @@ and Guild: {
   };
 
   type create = t;
+  type update = t;
+  type delete = unavailable;
+
+  type banAdd = {
+    guildId: snowflake,
+    user: User.t,
+  };
+  type banRemove = {
+    guildId: snowflake,
+    user: User.t,
+  };
+
+  type emojisUpdate = {
+    guildId: snowflake,
+    emojis: array(Emoji.t),
+  };
+
+  type integrationsUpdate = {guildId: snowflake};
+
+  type memberAdd = {
+    guildId: snowflake,
+    member,
+  };
+
+  type memberRemove = {
+    guildId: snowflake,
+    user: User.t,
+  };
+
+  type memberUpdate = {
+    guildId: snowflake,
+    roles: array(snowflake),
+    user: User.t,
+    nick: option(string),
+  };
+
+  type membersChunk = {
+    guildId: snowflake,
+    members: array(member),
+  };
+
+  type roleCreate = {
+    guildId: snowflake,
+    role: Permissions.role,
+  };
+
+  type roleUpdate = {
+    guildId: snowflake,
+    role: Permissions.role,
+  };
+
+  type roleDelete = {
+    guildId: snowflake,
+    roleId: snowflake,
+  };
 } = {
   type member = {
     user: User.t,
@@ -263,6 +343,61 @@ and Guild: {
   };
 
   type create = t;
+  type update = t;
+  type delete = unavailable;
+
+  type banAdd = {
+    guildId: snowflake,
+    user: User.t,
+  };
+  type banRemove = {
+    guildId: snowflake,
+    user: User.t,
+  };
+
+  type emojisUpdate = {
+    guildId: snowflake,
+    emojis: array(Emoji.t),
+  };
+
+  type integrationsUpdate = {guildId: snowflake};
+
+  type memberAdd = {
+    guildId: snowflake,
+    member,
+  };
+
+  type memberRemove = {
+    guildId: snowflake,
+    user: User.t,
+  };
+
+  type memberUpdate = {
+    guildId: snowflake,
+    roles: array(snowflake),
+    user: User.t,
+    nick: option(string),
+  };
+
+  type membersChunk = {
+    guildId: snowflake,
+    members: array(member),
+  };
+
+  type roleCreate = {
+    guildId: snowflake,
+    role: Permissions.role,
+  };
+
+  type roleUpdate = {
+    guildId: snowflake,
+    role: Permissions.role,
+  };
+
+  type roleDelete = {
+    guildId: snowflake,
+    roleId: snowflake,
+  };
 };
 
 module Message = {
@@ -416,7 +551,7 @@ module Message = {
   };
 };
 
-exception UnknownMessage(Js.Json.t);
+exception UnknownMessage(string);
 
 type ready = {
   v: int,
@@ -444,7 +579,20 @@ type dispatch =
   | ChannelUpdate(Channel.update)
   | ChannelDelete(Channel.delete)
   | ChannelPinsUpdate(Channel.pinsUpdate)
-  | GuildCreate(Guild.t)
+  | GuildCreate(Guild.create)
+  | GuildUpdate(Guild.update)
+  | GuildDelete(Guild.delete)
+  | GuildBanAdd(Guild.banAdd)
+  | GuildBanRemove(Guild.banRemove)
+  | GuildEmojisUpdate(Guild.emojisUpdate)
+  | GuildIntegrationsUpdate(Guild.integrationsUpdate)
+  | GuildMemberAdd(Guild.memberAdd)
+  | GuildMemberRemove(Guild.memberRemove)
+  | GuildMemberUpdate(Guild.memberUpdate)
+  | GuildMembersChunk(Guild.membersChunk)
+  | GuildRoleCreate(Guild.roleCreate)
+  | GuildRoleUpdate(Guild.roleUpdate)
+  | GuildRoleDelete(Guild.roleDelete)
   | MessageCreate(Message.create)
   | MessageUpdate(Message.update)
   | MessageDelete(Message.delete)
@@ -452,7 +600,12 @@ type dispatch =
   | MessageReactionAdd(Message.reactionAdd)
   | MessageReactionRemove(Message.reactionRemove)
   | MessageReactionRemoveAll(Message.reactionRemoveAll)
-  | TypingStart(typingStart);
+  | PresenceUpdate(Presence.update)
+  | TypingStart(typingStart)
+  | UserUpdate(User.update)
+  | VoiceStateUpdate(Voice.update)
+  | VoiceServerUpdate(Voice.serverUpdate)
+  | WebhooksUpdate(Webhook.update);
 
 type heartbeat = option(int);
 
@@ -513,7 +666,7 @@ type payload =
   | Heartbeat(heartbeat)
   | Identify(identify)
   | StatusUpdate(statusUpdate)
-  | VoiceStateUpdate(voiceStateUpdate)
+  | UpdateVoiceState(voiceStateUpdate)
   | Resume(resume)
   | Reconnect
   | RequestGuildMembers(requestGuildMembers)
@@ -535,7 +688,7 @@ let op_of_payload = payload =>
   | Heartbeat(_) => 1
   | Identify(_) => 2
   | StatusUpdate(_) => 3
-  | VoiceStateUpdate(_) => 4
+  | UpdateVoiceState(_) => 4
   | Resume(_) => 6
   | Reconnect => 7
   | RequestGuildMembers(_) => 8
@@ -557,6 +710,19 @@ let t_of_payload = payload =>
       | ChannelDelete(_) => "CHANNEL_DELETE"
       | ChannelPinsUpdate(_) => "CHANNEL_PINS_UPDATE"
       | GuildCreate(_) => "GUILD_CREATE"
+      | GuildUpdate(_) => "GUILD_UPDATE"
+      | GuildDelete(_) => "GUILD_DELETE"
+      | GuildBanAdd(_) => "GUILD_BAN_ADD"
+      | GuildBanRemove(_) => "GUILD_BAN_REMOVE"
+      | GuildEmojisUpdate(_) => "GUILD_EMOJIS_UPDATE"
+      | GuildIntegrationsUpdate(_) => "GUILD_INTEGRATIONS_UPDATE"
+      | GuildMemberAdd(_) => "GUILD_MEMBER_ADD"
+      | GuildMemberRemove(_) => "GUILD_MEMBER_REMOVE"
+      | GuildMemberUpdate(_) => "GUILD_MEMBER_UPDATE"
+      | GuildMembersChunk(_) => "GUILD_MEMBERS_CHUNK"
+      | GuildRoleCreate(_) => "GUILD_ROLE_CREATE"
+      | GuildRoleUpdate(_) => "GUILD_ROLE_UPDATE"
+      | GuildRoleDelete(_) => "GUILD_ROLE_DELETE"
       | MessageCreate(_) => "MESSAGE_CREATE"
       | MessageUpdate(_) => "MESSAGE_UPDATE"
       | MessageDelete(_) => "MESSAGE_DELETE"
@@ -564,7 +730,12 @@ let t_of_payload = payload =>
       | MessageReactionAdd(_) => "MESSAGE_REACTION_ADD"
       | MessageReactionRemove(_) => "MESSAGE_REACTION_REMOVE"
       | MessageReactionRemoveAll(_) => "MESSAGE_REACTION_REMOVE_ALL"
+      | PresenceUpdate(_) => "PRESENCE_UPDATE"
       | TypingStart(_) => "TYPING_START"
+      | UserUpdate(_) => "USER_UPDATE"
+      | VoiceStateUpdate(_) => "VOICE_STATE_UPDATE"
+      | VoiceServerUpdate(_) => "VOICE_SERVER_UPDATE"
+      | WebhooksUpdate(_) => "WEBHOOKS_UPDATE"
       },
     )
   | _ => Missing
@@ -576,6 +747,16 @@ module Decode = {
     | Some(x) => Field(x)
     | None => Missing
     };
+
+  module Webhook = {
+    open Webhook;
+
+    let update = json =>
+      Json.Decode.{
+        guildId: json |> field("guild_id", string),
+        channelId: json |> field("channel_id", string),
+      };
+  };
 
   module Permissions = {
     open Permissions;
@@ -599,7 +780,7 @@ module Decode = {
     let t = json =>
       Json.Decode.{
         id: json |> field("id", string),
-        username: json |> field("username", string),
+        username: json |> optionalField("username", string),
         discriminator: json |> field("discriminator", string),
         avatar: json |> field("avatar", optional(string)),
         bot: json |> optionalField("bot", bool),
@@ -610,6 +791,8 @@ module Decode = {
         flags: json |> optionalField("flags", int),
         premiumType: json |> optionalField("premium_type", int),
       };
+
+    let update = t;
   };
 
   module Presence = {
@@ -737,7 +920,11 @@ module Decode = {
       };
   };
 
-  module rec Voice_: {let state: Js.Json.t => Voice.state;} = {
+  module rec Voice_: {
+    let state: Js.Json.t => Voice.state;
+    let update: Js.Json.t => Voice.update;
+    let serverUpdate: Js.Json.t => Voice.serverUpdate;
+  } = {
     open Voice;
 
     let state = json =>
@@ -747,12 +934,34 @@ module Decode = {
         userId: json |> field("user_id", string),
         member: json |> optionalField("member", Guild_.member),
       };
+
+    let update = state;
+
+    let serverUpdate = json =>
+      Json.Decode.{
+        token: json |> field("token", string),
+        guildId: json |> field("guild_id", string),
+        endpoint: json |> field("endpoint", string),
+      };
   }
   and Guild_: {
     let member: Js.Json.t => Guild.member;
     let unavailable: Js.Json.t => Guild.unavailable;
     let t: Js.Json.t => Guild.t;
     let create: Js.Json.t => Guild.create;
+    let update: Js.Json.t => Guild.update;
+    let delete: Js.Json.t => Guild.delete;
+    let banAdd: Js.Json.t => Guild.banAdd;
+    let banRemove: Js.Json.t => Guild.banRemove;
+    let emojisUpdate: Js.Json.t => Guild.emojisUpdate;
+    let integrationsUpdate: Js.Json.t => Guild.integrationsUpdate;
+    let memberAdd: Js.Json.t => Guild.memberAdd;
+    let memberRemove: Js.Json.t => Guild.memberRemove;
+    let memberUpdate: Js.Json.t => Guild.memberUpdate;
+    let membersChunk: Js.Json.t => Guild.membersChunk;
+    let roleCreate: Js.Json.t => Guild.roleCreate;
+    let roleUpdate: Js.Json.t => Guild.roleUpdate;
+    let roleDelete: Js.Json.t => Guild.roleDelete;
   } = {
     open Guild;
 
@@ -817,6 +1026,75 @@ module Decode = {
       };
 
     let create = t;
+    let update = t;
+    let delete = unavailable;
+
+    let banAdd: Js.Json.t => Guild.banAdd =
+      json =>
+        Json.Decode.{
+          guildId: json |> field("guild_id", string),
+          user: json |> field("user", User.t),
+        };
+    let banRemove: Js.Json.t => Guild.banRemove =
+      json =>
+        Json.Decode.{
+          guildId: json |> field("guild_id", string),
+          user: json |> field("user", User.t),
+        };
+
+    let emojisUpdate = json =>
+      Json.Decode.{
+        guildId: json |> field("guild_id", string),
+        emojis: json |> field("emojis", array(Emoji.t)),
+      };
+
+    let integrationsUpdate = json =>
+      Json.Decode.{guildId: json |> field("guild_id", string)};
+
+    let memberAdd = json =>
+      Json.Decode.{
+        guildId: json |> field("guild_id", string),
+        member: json |> member,
+      };
+
+    let memberRemove = json =>
+      Json.Decode.{
+        guildId: json |> field("guild_id", string),
+        user: json |> field("user", User.t),
+      };
+
+    let memberUpdate = json =>
+      Json.Decode.{
+        guildId: json |> field("guild_id", string),
+        roles: json |> field("roles", array(string)),
+        user: json |> field("user", User.t),
+        nick: json |> field("nick", optional(string)),
+      };
+
+    let membersChunk = json =>
+      Json.Decode.{
+        guildId: json |> field("guild_id", string),
+        members: json |> field("members", array(member)),
+      };
+
+    let roleCreate: Js.Json.t => Guild.roleCreate =
+      json =>
+        Json.Decode.{
+          guildId: json |> field("guild_id", string),
+          role: json |> field("role", Permissions.role),
+        };
+
+    let roleUpdate = json =>
+      Json.Decode.{
+        guildId: json |> field("guild_id", string),
+        role: json |> field("role", Permissions.role),
+      };
+
+    let roleDelete = json =>
+      Json.Decode.{
+        guildId: json |> field("guild_id", string),
+        roleId: json |> field("role_id", string),
+      };
   };
 
   module Voice = Voice_;
@@ -1043,6 +1321,27 @@ module Decode = {
                  | "CHANNEL_PINS_UPDATE" =>
                    ChannelPinsUpdate(Channel.pinsUpdate(j))
                  | "GUILD_CREATE" => GuildCreate(Guild.create(j))
+                 | "GUILD_UPDATE" => GuildUpdate(Guild.update(j))
+                 | "GUILD_DELETE" => GuildDelete(Guild.delete(j))
+                 | "GUILD_BAN_ADD" => GuildBanAdd(Guild.banAdd(j))
+                 | "GUILD_BAN_REMOVE" => GuildBanRemove(Guild.banRemove(j))
+                 | "GUILD_EMOJIS_UPDATE" =>
+                   GuildEmojisUpdate(Guild.emojisUpdate(j))
+                 | "GUILD_INTEGRATIONS_UPDATE" =>
+                   GuildIntegrationsUpdate(Guild.integrationsUpdate(j))
+                 | "GUILD_MEMBER_ADD" => GuildMemberAdd(Guild.memberAdd(j))
+                 | "GUILD_MEMBER_REMOVE" =>
+                   GuildMemberRemove(Guild.memberRemove(j))
+                 | "GUILD_MEMBER_UPDATE" =>
+                   GuildMemberUpdate(Guild.memberUpdate(j))
+                 | "GUILD_MEMBERS_CHUNK" =>
+                   GuildMembersChunk(Guild.membersChunk(j))
+                 | "GUILD_ROLE_CREATE" =>
+                   GuildRoleCreate(Guild.roleCreate(j))
+                 | "GUILD_ROLE_UPDATE" =>
+                   GuildRoleUpdate(Guild.roleUpdate(j))
+                 | "GUILD_ROLE_DELETE" =>
+                   GuildRoleDelete(Guild.roleDelete(j))
                  | "MESSAGE_CREATE" => MessageCreate(Message.create(j))
                  | "MESSAGE_UPDATE" => MessageUpdate(Message.update(j))
                  | "MESSAGE_DELETE" => MessageDelete(Message.delete(j))
@@ -1054,15 +1353,29 @@ module Decode = {
                    MessageReactionRemove(Message.reactionRemove(j))
                  | "MESSAGE_REACTION_REMOVE_ALL" =>
                    MessageReactionRemoveAll(Message.reactionRemoveAll(j))
+                 | "PRESENCE_UPDATE" => PresenceUpdate(Presence.update(j))
                  | "TYPING_START" => TypingStart(typingStart(j))
-                 | _ => raise(UnknownMessage(json))
+                 | "USER_UPDATE" => UserUpdate(User.update(j))
+                 | "VOICE_STATE_UPDATE" => VoiceStateUpdate(Voice.update(j))
+                 | "VOICE_SERVER_UPDATE" =>
+                   VoiceServerUpdate(Voice.serverUpdate(j))
+                 | "WebhooksUpdate" => WebhooksUpdate(Webhook.update(j))
+                 | _ =>
+                   raise(
+                     UnknownMessage(
+                       "Unknown dispatch " ++ (json |> Js.Json.stringify),
+                     ),
+                   )
                  },
                )
              | 7 => Reconnect
              | 9 => InvalidSession(bool(j))
              | 10 => Hello(hello(j))
              | 11 => Ack
-             | _ => raise(UnknownMessage(json))
+             | _ =>
+               raise(
+                 UnknownMessage("Unknown op " ++ (json |> Js.Json.stringify)),
+               )
              }
            ),
 
@@ -1245,7 +1558,7 @@ module Encode = {
           | Heartbeat(payload) => payload |> required(heartbeat)
           | Identify(payload) => payload |> required(identify)
           | StatusUpdate(payload) => payload |> required(statusUpdate)
-          | VoiceStateUpdate(payload) =>
+          | UpdateVoiceState(payload) =>
             payload |> required(voiceStateUpdate)
           | Resume(payload) => payload |> required(resume)
           | RequestGuildMembers(payload) =>
@@ -1270,7 +1583,7 @@ module Encode = {
           | Heartbeat(payload) => payload |> required(heartbeat)
           | Identify(payload) => payload |> required(identify)
           | StatusUpdate(payload) => payload |> required(statusUpdate)
-          | VoiceStateUpdate(payload) =>
+          | UpdateVoiceState(payload) =>
             payload |> required(voiceStateUpdate)
           | Resume(payload) => payload |> required(resume)
           | RequestGuildMembers(payload) =>
